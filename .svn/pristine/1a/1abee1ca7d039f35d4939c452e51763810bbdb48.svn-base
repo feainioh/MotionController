@@ -1,0 +1,107 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace OQC_IC_CHECK_System
+{
+    partial class PCI1285_E
+    {
+        #region 输入输出信号定义
+        #region 输入
+        internal BoardSignalDefinition EMGSTOP = new BoardSignalDefinition(3, 3);//急停
+        internal BoardSignalDefinition Start = new BoardSignalDefinition(4, 0);//启动
+        internal BoardSignalDefinition Reset = new BoardSignalDefinition(4, 2);//复位
+        internal BoardSignalDefinition LockIn1 = new BoardSignalDefinition(5, 0);//安全锁1
+        internal BoardSignalDefinition LockIn2 = new BoardSignalDefinition(5, 2);//安全锁2
+        internal BoardSignalDefinition LockInBefore = new BoardSignalDefinition(4,3);//安全锁-前门
+        internal BoardSignalDefinition FeedCylinderUpper = new BoardSignalDefinition(0, 0);//上料气缸上限
+        internal BoardSignalDefinition FeedCylinderUnder = new BoardSignalDefinition(0, 2);//上料气缸下限
+        internal BoardSignalDefinition PCSCylinderUpper = new BoardSignalDefinition(6, 0);//PCS气缸上限
+        internal BoardSignalDefinition PCSCylinderUnder = new BoardSignalDefinition(6, 2);//PCS气缸下限
+        internal BoardSignalDefinition DropCylinderUpper = new BoardSignalDefinition(0, 3);//下料气缸上限
+        internal BoardSignalDefinition DropCylinderUnder = new BoardSignalDefinition(1, 0);//下料气缸下限
+        internal BoardSignalDefinition LightSensor = new BoardSignalDefinition(6,3);//光栅
+        internal BoardSignalDefinition FeedLeftCheck = new BoardSignalDefinition(1,2);//左吸取真空检测
+        internal BoardSignalDefinition FeedRightCheck = new BoardSignalDefinition(1,3);//右吸取真空检测
+        internal BoardSignalDefinition DropCheck = new BoardSignalDefinition(2,0);//下料吸取真空检测
+        internal BoardSignalDefinition PCSCheck1 = new BoardSignalDefinition(2,2);//PCS吸取真空检测1号
+        internal BoardSignalDefinition PCSCheck2 = new BoardSignalDefinition(2,3);//PCS吸取真空检测2号
+        internal BoardSignalDefinition PCSCheck3 = new BoardSignalDefinition(3,0);//PCS吸取真空检测3号
+        internal BoardSignalDefinition PCSCheck4= new BoardSignalDefinition(3,2);//PCS吸取真空检测4号
+
+        #endregion
+        #region 输出
+        internal BoardSignalDefinition LightControlSTB1 = new BoardSignalDefinition(3, 7);//光源控制器
+        internal BoardSignalDefinition LightControlSTB2 = new BoardSignalDefinition(3, 6);//光源控制器
+        internal BoardSignalDefinition CylinderFeed = new BoardSignalDefinition(0, 4);//上料吸取气缸
+        internal BoardSignalDefinition CylinderDrop = new BoardSignalDefinition(0, 5);//下料吸取气缸
+        internal BoardSignalDefinition CylinderLeftUpper = new BoardSignalDefinition(1, 4);//上料轴左吸气
+        internal BoardSignalDefinition CylinderLeftLower = new BoardSignalDefinition(1, 5);//上料轴左吹气
+        internal BoardSignalDefinition CylinderRightUpper = new BoardSignalDefinition(2, 4);//上料轴右吸气
+        internal BoardSignalDefinition CylinderRightLower = new BoardSignalDefinition(2, 5);//上料轴右吹气
+        internal BoardSignalDefinition CylinderDropUpper = new BoardSignalDefinition(3, 4);//下料轴吸气
+        internal BoardSignalDefinition CylinderDropLower = new BoardSignalDefinition(3, 5);//下料轴吹气
+        internal BoardSignalDefinition CylinderPCS = new BoardSignalDefinition(6, 7);//PCS条码气缸
+        internal BoardSignalDefinition CylinderPCSUpper = new BoardSignalDefinition(4,4);//PCS条码吸气
+        internal BoardSignalDefinition CylinderPCSLower = new BoardSignalDefinition(4, 5);//PCS条码吹气
+        internal BoardSignalDefinition AlarmLight_Red = new BoardSignalDefinition(6, 4);//报警灯-红色
+        internal BoardSignalDefinition AlarmLight_Yellow = new BoardSignalDefinition(6, 5);//报警灯-黄色
+        internal BoardSignalDefinition AlarmLight_Green = new BoardSignalDefinition(7, 4);//报警灯-绿色
+        internal BoardSignalDefinition AlarmLight_Buzzer = new BoardSignalDefinition(7, 5);//报警灯-声音
+        internal BoardSignalDefinition Lock = new BoardSignalDefinition(5, 4);//安全门 
+        internal BoardSignalDefinition Light = new BoardSignalDefinition(5,5);//机台照明
+        internal BoardSignalDefinition PCSLightControl = new BoardSignalDefinition(4,7);//PCS条码光源控制
+        internal BoardSignalDefinition PCSCheckCylinder = new BoardSignalDefinition(6,7);//PCS条码检查气缸
+        #endregion
+        #endregion
+
+        internal SignalChangeMonitor IO_X_Alarm = new SignalChangeMonitor();//X轴报警
+        internal SignalChangeMonitor IO_X_LimtP = new SignalChangeMonitor();//X轴正限位
+        internal SignalChangeMonitor IO_X_LimtN = new SignalChangeMonitor();//X轴负限位
+        internal SignalChangeMonitor IO_Y_Alarm = new SignalChangeMonitor();//Y轴报警
+        internal SignalChangeMonitor IO_Y_LimtP = new SignalChangeMonitor();//Y轴正限位
+        internal SignalChangeMonitor IO_Y_LimtN = new SignalChangeMonitor();//Y轴负限位
+        internal SignalChangeMonitor IO_A_Alarm = new SignalChangeMonitor();//A轴报警
+        internal SignalChangeMonitor IO_A_LimtP = new SignalChangeMonitor();//A轴正限位
+        internal SignalChangeMonitor IO_A_LimtN = new SignalChangeMonitor();//A轴负限位
+        internal SignalChangeMonitor IO_B_Alarm = new SignalChangeMonitor();//B轴报警
+        internal SignalChangeMonitor IO_B_LimtP = new SignalChangeMonitor();//B轴正限位
+        internal SignalChangeMonitor IO_B_LimtN = new SignalChangeMonitor();//B轴负限位
+        internal SignalChangeMonitor IO_C_Alarm = new SignalChangeMonitor();//C轴报警
+        internal SignalChangeMonitor IO_C_LimtP = new SignalChangeMonitor();//C轴正限位
+        internal SignalChangeMonitor IO_C_LimtN = new SignalChangeMonitor();//C轴负限位
+        internal SignalChangeMonitor IO_D_Alarm = new SignalChangeMonitor();//D轴报警
+        internal SignalChangeMonitor IO_D_LimtP = new SignalChangeMonitor();//D轴正限位
+        internal SignalChangeMonitor IO_D_LimtN = new SignalChangeMonitor();//D轴负限位
+
+
+        
+        internal SignalChangeMonitor Tag_SetStart = new SignalChangeMonitor(500);//开始按键
+        internal SignalChangeMonitor Tag_ICBoardArrived = new SignalChangeMonitor(100);//IC-到板信号
+        internal SignalChangeMonitor Tag_ICBoardOut = new SignalChangeMonitor(100);//IC-出板信号
+        internal SignalChangeMonitor Tag_FPCBoardArrived = new SignalChangeMonitor(100);//FPC-进板信号
+        internal SignalChangeMonitor Tag_FPCBoardOut = new SignalChangeMonitor(100);//FPC-出板信号
+        internal SignalChangeMonitor Tag_Reset = new SignalChangeMonitor(2000);//复位按键
+        internal SignalChangeMonitor Tag_Buzzer = new SignalChangeMonitor(100);//蜂鸣器
+
+        internal SignalChangeMonitor Tag_Lock1 = new SignalChangeMonitor();//前门1
+        internal SignalChangeMonitor Tag_Lock2 = new SignalChangeMonitor();//前门2
+        internal SignalChangeMonitor Tag_LockBefore = new SignalChangeMonitor();//后门
+
+        internal SignalChangeMonitor Tag_LightSensor = new SignalChangeMonitor();//光栅
+        internal SuckerSignalMonitor Tag_FeedLeftCheck = new SuckerSignalMonitor();//左吸取真空检测
+        internal SuckerSignalMonitor Tag_FeedRightCheck = new SuckerSignalMonitor();//右吸取真空检测
+        internal SuckerSignalMonitor Tag_DropCheck = new SuckerSignalMonitor();//下料吸取真空检测
+        internal SuckerSignalMonitor Tag_PCSCheck1  = new SuckerSignalMonitor();//PCS吸取真空检测1号
+        internal SuckerSignalMonitor Tag_PCSCheck2 = new SuckerSignalMonitor();//PCS吸取真空检测2号
+        internal SuckerSignalMonitor Tag_PCSCheck3 = new SuckerSignalMonitor();//PCS吸取真空检测3号
+        internal SuckerSignalMonitor Tag_PCSCheck4  = new SuckerSignalMonitor();//PCS吸取真空检测4号
+
+        internal CylinderSignalMonitor Tag_CylinderFeed = new CylinderSignalMonitor(6000);//上料气缸
+        internal CylinderSignalMonitor Tag_CylinderPCS = new CylinderSignalMonitor(6000);//PCS气缸
+        internal CylinderSignalMonitor Tag_CylinderDrop = new CylinderSignalMonitor(6000);//下料吸取气缸
+
+
+    }
+}

@@ -1,0 +1,13 @@
+****************************************程序开启****************************************
+2018-06-23 09:43:07.775		ICTest CloseCamera Err:未将对象引用设置到对象的实例。
+2018-06-23 09:43:08.845		ICTest CloseCamera Err:未将对象引用设置到对象的实例。
+2018-06-23 09:43:09.810		ICTest CloseCamera Err:未将对象引用设置到对象的实例。
+2018-06-23 09:43:09.999		ICTest CloseCamera Err:未将对象引用设置到对象的实例。
+2018-06-23 09:43:10.356		ICTest CloseCamera Err:未将对象引用设置到对象的实例。
+2018-06-23 09:43:10.526		ICTest CloseCamera Err:未将对象引用设置到对象的实例。
+2018-06-23 09:43:10.715		ICTest CloseCamera Err:未将对象引用设置到对象的实例。
+2018-06-23 09:43:10.894		ICTest CloseCamera Err:未将对象引用设置到对象的实例。
+2018-06-23 09:43:11.084		ICTest CloseCamera Err:未将对象引用设置到对象的实例。
+2018-06-23 09:43:11.283		ICTest CloseCamera Err:未将对象引用设置到对象的实例。
+2018-06-23 09:43:14.224		ICTest	开启相机异常:HALCON error #5312: Image acquisition: device cannot be initialized in operator open_framegrabber
+2018-06-23 09:43:15.289		ICTest	开启相机异常:HALCON error #5312: Image acquisition: device cannot be initialized in operator open_framegrabber

@@ -1,0 +1,1440 @@
+﻿using HalconCCD;
+using LayeredSkin.DirectUI;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Diagnostics;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Windows.Forms;
+
+namespace OQC_IC_CHECK_System
+{
+    public partial class ParaForm : Frame
+    {
+        /// <summary>
+        /// 选择的轴编号
+        /// </summary>
+        private int AxisNum = 0;
+        private CCDShow m_CCDShow;
+        public ParaForm()
+        {
+            InitializeComponent();
+        }
+        MyFunction myFunction = new MyFunction();
+
+        private void ParaForm_Load(object sender, EventArgs e)
+        {
+            textBox_SavePath.Text = GlobalVar.PictureSavePath;
+            comboBox_Modbus.SelectedIndex = 0;
+            btn_puase.Enabled = false;
+            combox_Axis.SelectedIndex = 0;
+            comboBox_Speed.SelectedIndex = 9;
+            comboBox_Speed_Run.SelectedIndex = 9;
+            numericUpDown_RunVelHigh.Value = (decimal)(GlobalVar.RunHighVel / GlobalVar.ServCMDRate);
+            numericUpDown_RunVelLow.Value = (decimal)(GlobalVar.RunLowVel / GlobalVar.ServCMDRate);
+            numericUpDown_RunAcc.Value = (decimal)(GlobalVar.RunAccVel / GlobalVar.ServCMDRate);
+            numericUpDown_RunDec.Value = (decimal)(GlobalVar.RunDccVel / GlobalVar.ServCMDRate);
+            AxisNum = 4;
+            label_suction1.Text = "左吸取:";
+            label_Operate.Text = "放置位置:";
+            label_suction2.Visible = true;
+            cb_Suction2.Visible = true;
+            label_WaitPosition.Visible = false;
+            tb_WaitPosition.Visible = false;
+            label_mm.Visible = false;
+            btn_MoveToWait.Visible = false;
+            btn_SaveWait.Visible = false;
+            lb_Position.Text = GlobalVar.AxisPCI.Position_A.ToString("0.000");
+            m_CCDShow = GlobalVar.CCD;
+            this.panel_CCD.Controls.Add(m_CCDShow);
+            foreach (DuiBaseControl item in ICRunMode.DUIControls)
+            {
+                if (item is DuiCheckBox)
+                {
+                    DuiCheckBox dcb = (DuiCheckBox)item;
+                    switch (dcb.Name)
+                    {
+                        case "MatrixMode":
+                            dcb.Checked = true;
+                            dcb.CheckedChanged += Dcb_MatrixModeCheckedChanged;
+                            tableLayoutPanel2.Visible = true;
+                            btn_Load.Visible = false;
+                            GlobalVar.ICRunMatrix = true;
+                            textBox_Ref_X.Text = GlobalVar.Ref_Point_AxisX.ToString("0.000");
+                            textBox_Ref_Y.Text = GlobalVar.Ref_Point_AxisY.ToString("0.000");
+                            textBox_Invertal_X.Text = GlobalVar.Point_ICXInterval.ToString("0.000");
+                            textBox_Invertal_Y.Text = GlobalVar.Point_ICYInterval.ToString("0.000");
+                            textBox_End_X.Text = GlobalVar.End_Point_AxisX.ToString("0.000");
+                            textBox_End_Y.Text = GlobalVar.End_Point_AxisY.ToString("0.000");
+                            break;
+                        case "ConfigMode":
+                            dcb.Checked = false;
+                            dcb.CheckedChanged += Dcb_ConfigModeCheckedChanged;
+                            btn_Load.Visible = false;
+                            // myFunction.WriteIniString(GlobalVar.gl_inisection_CCD, GlobalVar.gl_iniKey_ICRunMatrix, "false");
+                            break;
+                    }
+                }
+            }
+            this.WindowRefresh.Tick += new EventHandler(WindowRefresh_Tick);
+        }
+
+        private void AxisPCI_Event_UpdatePositionY(double position)
+        {
+            if (tabControlTF_para.SelectedIndex == 1) this.BeginInvoke(new Action(() => { label_Location_Y.Text = "Y:" + position.ToString("0.000") + "mm"; }));
+        }
+
+        private void AxisPCI_Event_UpdatePositionX(double position)
+        {
+            if (tabControlTF_para.SelectedIndex == 1) this.BeginInvoke(new Action(() => { label_location_X.Text = "X:" + position.ToString("0.000") + "mm"; }));
+        }
+
+        private void Dcb_ConfigModeCheckedChanged(object sender, EventArgs e)
+        {
+            if ((sender as DuiCheckBox).Checked)
+            {
+                tableLayoutPanel2.Visible = false;
+                GlobalVar.ICRunMatrix = false;
+                btn_Load.Visible = true;
+                myFunction.WriteIniString(GlobalVar.gl_inisection_CCD, GlobalVar.gl_iniKey_ICRunMatrix, "false");
+            }
+        }
+
+        private void Dcb_MatrixModeCheckedChanged(object sender, EventArgs e)
+        {
+            if ((sender as DuiCheckBox).Checked)
+            {
+                tableLayoutPanel2.Visible = true;
+                btn_Load.Visible = false;
+                GlobalVar.ICRunMatrix = true;
+                myFunction.WriteIniString(GlobalVar.gl_inisection_CCD, GlobalVar.gl_iniKey_ICRunMatrix, "true");
+                textBox_Ref_X.Text = GlobalVar.Ref_Point_AxisX.ToString("0.000");
+                textBox_Ref_Y.Text = GlobalVar.Ref_Point_AxisY.ToString("0.000");
+                textBox_Invertal_X.Text = GlobalVar.Point_ICXInterval.ToString("0.000");
+                textBox_Invertal_Y.Text = GlobalVar.Point_ICYInterval.ToString("0.000");
+                textBox_End_X.Text = GlobalVar.End_Point_AxisX.ToString("0.000");
+                textBox_End_Y.Text = GlobalVar.End_Point_AxisY.ToString("0.000");
+            }
+        }
+
+        private void btn_ICReset_Click(object sender, EventArgs e)
+        {
+            Thread thd_X = new Thread(new ThreadStart(delegate
+            {
+                GlobalVar.AxisPCI.ClearAxisError(GlobalVar.AxisX.LinkIndex);
+                GlobalVar.AxisPCI.Home(GlobalVar.AxisX.LinkIndex);
+                GlobalVar.AxisPCI.WaitAllMoveFinished();
+            }));
+            thd_X.IsBackground = true;
+            thd_X.Start();
+
+        }
+
+        private void btn_ICReset_Y_Click(object sender, EventArgs e)
+        {
+            Thread thd_Y = new Thread(new ThreadStart(delegate
+            {
+                GlobalVar.AxisPCI.ClearAxisError(GlobalVar.AxisY.LinkIndex);
+                GlobalVar.AxisPCI.Home(GlobalVar.AxisY.LinkIndex);
+                GlobalVar.AxisPCI.WaitAllMoveFinished();
+            }));
+            thd_Y.IsBackground = true;
+            thd_Y.Start();
+        }
+
+        private void btn_LoadReset_Click(object sender, EventArgs e)
+        {
+            Thread thd_A = new Thread(new ThreadStart(delegate
+            {
+                GlobalVar.AxisPCI.ClearAxisError(GlobalVar.AxisA.LinkIndex);
+                GlobalVar.AxisPCI.SetDO(GlobalVar.AxisPCI.CylinderFeed, false);
+                GlobalVar.AxisPCI.Home(GlobalVar.AxisA.LinkIndex, (uint)1);
+                GlobalVar.AxisPCI.WaitAllMoveFinished();
+            }));
+            thd_A.IsBackground = true;
+            thd_A.Start();
+        }
+
+        private void btn_DownReset_Click(object sender, EventArgs e)
+        {
+            Thread thd_B = new Thread(new ThreadStart(delegate
+            {
+                GlobalVar.AxisPCI.ClearAxisError(GlobalVar.AxisB.LinkIndex);
+                GlobalVar.AxisPCI.SetDO(GlobalVar.AxisPCI.CylinderDrop, false);
+                GlobalVar.AxisPCI.Home(GlobalVar.AxisB.LinkIndex, (uint)1);
+                GlobalVar.AxisPCI.WaitAllMoveFinished();
+            }));
+            thd_B.IsBackground = true;
+            thd_B.Start();
+        }
+
+        private void btn_LeftLoad_Click(object sender, EventArgs e)
+        {
+            //运动到上料位置
+            GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisA.LinkIndex, true, GlobalVar.Point_FeedLeft * GlobalVar.ServCMDRate, false);//运动到托盘上料位置
+            GlobalVar.AxisPCI.WaitAllMoveFinished();//等待运动完成
+            GlobalVar.AxisPCI.SuckerMotion(1, true);
+            WaitBAxisMove();//下料轴移动到安全区域      
+            GlobalVar.Feed_Modbus.AddMsgList(GlobalVar.Feed_Modbus.Coils.CommitSignal, true);//上料完成，信号置为0
+            GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisA.LinkIndex, true, (GlobalVar.Point_FeedRight) * GlobalVar.ServCMDRate, false);//运动到IC上料位置
+            GlobalVar.AxisPCI.WaitAllMoveFinished();//等待运动完成
+            GlobalVar.AxisPCI.SuckerMotion(1, false);
+            GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisA.LinkIndex, true, (GlobalVar.Point_FeedLeft) * GlobalVar.ServCMDRate, false);//运动到托盘上料位置
+
+        }
+        /// <summary>
+        /// 下料轴移动到安全区域
+        /// </summary>
+        private void WaitBAxisMove()
+        {
+            GlobalVar.AxisPCI.StopMove(GlobalVar.AxisB.LinkIndex);//停止移动下料轴
+            GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisB.LinkIndex, true, (GlobalVar.Point_DropRight) * GlobalVar.ServCMDRate, false);//移动到安全位置[下料位置]
+            GlobalVar.AxisPCI.WaitSigleMoveFinished(GlobalVar.AxisB.LinkIndex);
+        }
+        /// <summary>
+        /// 上料轴移动到安全区域
+        /// </summary>
+        private void WaitAAxisMove()
+        {
+            GlobalVar.AxisPCI.StopMove(GlobalVar.AxisA.LinkIndex);
+            GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisA.LinkIndex, true, (GlobalVar.Point_FeedLeft) * GlobalVar.ServCMDRate, false);//移动到安全区域【上料位置】
+            GlobalVar.AxisPCI.WaitSigleMoveFinished(GlobalVar.AxisA.LinkIndex);
+        }
+        private void PCSLoad_Click(object sender, EventArgs e)
+        {
+            //运动到上料位置
+            GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisA.LinkIndex, true, (GlobalVar.Point_FeedLeft) * GlobalVar.ServCMDRate, false);//运动到托盘上料位置
+            GlobalVar.AxisPCI.WaitAllMoveFinished();//等待运动完成
+            GlobalVar.AxisPCI.SuckerMotion(4, true);
+            WaitBAxisMove();//下料轴移动到安全区域           
+            GlobalVar.Feed_Modbus.AddMsgList(GlobalVar.Feed_Modbus.Coils.CommitSignal, true);//上料完成，信号置为0
+            GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisA.LinkIndex, true, (GlobalVar.Point_FeedRight) * GlobalVar.ServCMDRate, false);//运动到IC上料位置
+            GlobalVar.AxisPCI.WaitAllMoveFinished();//等待运动完成
+            GlobalVar.AxisPCI.SuckerMotion(4, false);
+            GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisA.LinkIndex, true, (GlobalVar.Point_FeedLeft) * GlobalVar.ServCMDRate, false);//运动到托盘上料位置
+        }
+
+        private void btn_Down_Click(object sender, EventArgs e)
+        {
+            GlobalVar.AxisPCI.ClearAxisError(GlobalVar.AxisB.LinkIndex);
+            //运动到上料位置
+            GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisB.LinkIndex, true, (GlobalVar.Point_DropLeft) * GlobalVar.ServCMDRate, false);//运动到托盘下料位置
+            GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisD.LinkIndex, true, GlobalVar.Point_PCSFeed * GlobalVar.ServCMDRate, false);
+            GlobalVar.AxisPCI.WaitAllMoveFinished();//等待运动完成
+            GlobalVar.AxisPCI.SuckerMotion(3, true);
+            WaitAAxisMove();//下料轴移动到安全区域               
+            GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisB.LinkIndex, true, (GlobalVar.Point_DropRight) * GlobalVar.ServCMDRate, false);//运动到PCS下料料位置
+            GlobalVar.AxisPCI.WaitAllMoveFinished();//等待运动完成
+            GlobalVar.AxisPCI.SuckerMotion(3, false);
+            GlobalVar.Drop_Modbus.AddMsgList(GlobalVar.Drop_Modbus.Coils.CommitSignal, true);//上料完成，信号置为0
+            //GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisB.LinkIndex, false, (GlobalVar.Point_DownLeft) * GlobalVar.ServCMDRate, false);//运动到托盘下料位置
+
+        }
+
+        private void btn_ICLoad_Click(object sender, EventArgs e)
+        {
+            GlobalVar.AxisPCI.ClearAxisError(GlobalVar.AxisC.LinkIndex);
+            GlobalVar.AxisPCI.Home(GlobalVar.AxisC.LinkIndex);//复位
+            GlobalVar.AxisPCI.WaitAllMoveFinished();
+            GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisC.LinkIndex, true, (GlobalVar.Point_ICFeed) * GlobalVar.MotorRate, false);
+            GlobalVar.AxisPCI.WaitAllMoveFinished();
+        }
+
+        private void btn_ICPhoto_Click(object sender, EventArgs e)
+        {
+            GlobalVar.AxisPCI.ClearAxisError(GlobalVar.AxisC.LinkIndex);
+            GlobalVar.AxisPCI.WaitAllMoveFinished();
+            GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisC.LinkIndex, true, (GlobalVar.Point_ICPhotoPosition) * GlobalVar.MotorRate, false);
+            GlobalVar.AxisPCI.WaitAllMoveFinished();
+        }
+
+        private void btn_PCSLoad_Click(object sender, EventArgs e)
+        {
+            GlobalVar.AxisPCI.ClearAxisError(GlobalVar.AxisD.LinkIndex);
+            GlobalVar.AxisPCI.Home(GlobalVar.AxisD.LinkIndex);//复位
+            GlobalVar.AxisPCI.WaitAllMoveFinished();
+            GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisD.LinkIndex, true, (GlobalVar.Point_PCSFeed) * GlobalVar.MotorRate, false);
+        }
+
+        private void btn_PCSWait_Click(object sender, EventArgs e)
+        {
+            GlobalVar.AxisPCI.ClearAxisError(GlobalVar.AxisD.LinkIndex);
+            GlobalVar.AxisPCI.Home(GlobalVar.AxisD.LinkIndex);//复位
+            GlobalVar.AxisPCI.WaitAllMoveFinished();
+            GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisD.LinkIndex, true, (GlobalVar.Point_PCSWaitPosition) * GlobalVar.MotorRate, false);
+        }
+
+        private void btn_PCSPhoto_Click(object sender, EventArgs e)
+        {
+            GlobalVar.AxisPCI.ClearAxisError(GlobalVar.AxisD.LinkIndex);
+            GlobalVar.AxisPCI.Home(GlobalVar.AxisD.LinkIndex);//复位
+            GlobalVar.AxisPCI.WaitAllMoveFinished();
+            GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisD.LinkIndex, true, (GlobalVar.Point_PCSPhotoPosition) * GlobalVar.MotorRate, false);
+            GlobalVar.AxisPCI.SuckerMotion(5, true);
+        }
+
+        private void btn_Photo_Click(object sender, EventArgs e)
+        {
+            ICPhotoAndAnalasit();
+            // ICTestProduce();
+        }
+        private void ICTestProduce()
+        {
+            Thread ICTest_Thd = new Thread(new ThreadStart(delegate
+            {
+                runCommand(null);
+            }));
+            ICTest_Thd.IsBackground = true;
+            ICTest_Thd.Start();
+        }
+
+        private void runCommand(object obj)
+        {
+            try
+            {
+                GlobalVar.AxisPCI.SetDO(GlobalVar.AxisPCI.LightControlSTB1, false);//关闭光源
+                GlobalVar.IC_Barcode_Dic.Clear();
+                //GlobalVar.AxisPCI.WaitAllMoveFinished();//等待运动结束
+                GlobalVar.AxisPCI.SetDO(GlobalVar.AxisPCI.LightControlSTB1, true);//open光源
+                GlobalVar.AxisPCI.FixPointMotion(0, 0, true);//回原点
+                //GlobalVar.ICProcedure = true;//开始IC流程
+                List<SPoint> pointlist = GlobalVar.CADPointList.m_List_PointInfo[0].m_ListGroup;
+                // GlobalVar.CCD.StartWork(pointlist.Count);
+                string barcodeStr = "";//用于记录barcode
+                for (int i = 0; i < pointlist.Count; i++)
+                {
+                    double dis_X, dis_Y;
+                    if (i == 0)
+                    {
+                        dis_X = (GlobalVar.Ref_Point_CADPos.Pos_X - pointlist[i].Pos_X) * -1; //机械原点在左上,X坐标需要取反
+                        dis_Y = GlobalVar.Ref_Point_CADPos.Pos_Y - pointlist[i].Pos_Y;
+                    }
+                    else
+                    {
+                        dis_X = (pointlist[i - 1].Pos_X - pointlist[i].Pos_X) * -1; //机械原点在左上,X坐标需要取反
+                        dis_Y = pointlist[i - 1].Pos_Y - pointlist[i].Pos_Y;
+                    }
+                    GlobalVar.AxisPCI.SetPoxEnd_X(dis_X);
+                    GlobalVar.AxisPCI.SetPoxEnd_Y(dis_Y);
+                    GlobalVar.AxisPCI.AxisGroup_Move(true, true);
+                    GlobalVar.AxisPCI.WaitAllMoveFinished();
+                    GlobalVar.CCD.PlayerOnce();
+                    Thread.Sleep(500);
+                    #region ic拍照解析流程
+                    //this.BeginInvoke(new Action(() =>
+                    //{
+                    //    string result_Str = "";
+                    //    if (i < 4 || (i > 7 && i < 12))
+                    //        result_Str = GlobalVar.CCD.GrabImage_Working(i, false);
+                    //    else
+                    //        result_Str = GlobalVar.CCD.GrabImage_Working(i, true);
+                    //    string[] result_arr = result_Str.Split('|');
+                    //    //保存结果
+                    //    GlobalVar.IC_Barcode_Dic.Add(2 * i, result_arr[0]);
+                    //    GlobalVar.IC_Barcode_Dic.Add(2 * +1, result_arr[1]);
+                    //}));
+
+                    #endregion
+
+                }
+                //GlobalVar.AxisPCI.WaitAllMoveFinished();//等待运动结束
+                GlobalVar.AxisPCI.SetProp_GPSpeed(GlobalVar.m_GPValue_VelHigh_low, GlobalVar.m_GPValue_VelLow_low, GlobalVar.m_GPValue_Acc_low, GlobalVar.m_GPValue_Dec_low);
+
+
+                GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisC.LinkIndex, true, (GlobalVar.Point_ICFeed) * GlobalVar.MotorRate, false);//托盘回上料位置
+
+                GlobalVar.AxisPCI.WaitSigleMoveFinished(GlobalVar.AxisC.LinkIndex);
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        private void ICPhotoAndAnalasit()
+        {
+            try
+            {
+                GlobalVar.IC_Barcode_Dic.Clear();
+                Stopwatch ICtime = new Stopwatch();
+                GlobalVar.AxisPCI.SetDO(GlobalVar.AxisPCI.LightControlSTB1, true);//open光源
+                GlobalVar.AxisPCI.FixPointMotion(0, 0, true);//回原点
+                GlobalVar.CCD.PlayerOnce();
+                ICtime.Start();
+                int PhotoCount = GlobalVar.IC_Columns * GlobalVar.IC_Rows;//计算总的拍照数量
+                GlobalVar.CCD.StartWork(PhotoCount);
+                for (int i = 0; i < GlobalVar.ICPointList.Count; i++)
+                {
+
+                    double dis_X, dis_Y;
+                    dis_X = GlobalVar.ICPointList[i].Pos_X;
+                    dis_Y = GlobalVar.ICPointList[i].Pos_Y;
+                    GlobalVar.AxisPCI.FixPointMotion(dis_X, dis_Y, false);
+                    GlobalVar.AxisPCI.WaitSigleMoveFinished(GlobalVar.AxisX.LinkIndex);
+                    GlobalVar.AxisPCI.WaitSigleMoveFinished(GlobalVar.AxisY.LinkIndex);
+                    Thread.Sleep(150);
+                    #region ic拍照解析流程
+                    string result_Str = "";
+                    result_Str = GlobalVar.CCD.GrabImage_Working(i, GlobalVar.PictureSavePath, false);
+
+                    string[] result_arr = result_Str.Split('|');
+                    //保存结果
+                    GlobalVar.IC_Barcode_Dic.Add(2 * i, result_arr[0]);
+                    GlobalVar.IC_Barcode_Dic.Add(2 * i + 1, result_arr[1]);
+
+                    #endregion
+                }
+                GlobalVar.CCD.EndWork();
+                GlobalVar.AxisPCI.SetProp_GPSpeed(GlobalVar.m_GPValue_VelHigh_low, GlobalVar.m_GPValue_VelLow_low, GlobalVar.m_GPValue_Acc_low, GlobalVar.m_GPValue_Dec_low);
+                GlobalVar.AxisPCI.FixPointMotion(GlobalVar.Ref_Point_AxisX, GlobalVar.Ref_Point_AxisY, false);//会参考原点
+                ICtime.Reset();
+                this.BeginInvoke(new Action(() => { this.btn_RunTotal.Enabled = true; }));
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        private void btn_ICReset_Click_1(object sender, EventArgs e)
+        {
+            GlobalVar.AxisPCI.ClearAxisError(GlobalVar.AxisC.LinkIndex);
+            GlobalVar.AxisPCI.Home(GlobalVar.AxisC.LinkIndex);//复位
+            GlobalVar.AxisPCI.WaitSigleMoveFinished(GlobalVar.AxisC.LinkIndex);
+            GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisC.LinkIndex, true, GlobalVar.Point_ICFeed * GlobalVar.MotorRate, false);
+        }
+
+        private void btn_PCSReset_Click(object sender, EventArgs e)
+        {
+            GlobalVar.AxisPCI.ClearAxisError(GlobalVar.AxisD.LinkIndex);
+            GlobalVar.AxisPCI.Home(GlobalVar.AxisD.LinkIndex);//复位
+            GlobalVar.AxisPCI.WaitSigleMoveFinished(GlobalVar.AxisD.LinkIndex);
+            GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisD.LinkIndex, true, GlobalVar.Point_PCSFeed * GlobalVar.MotorRate, false);
+        }
+
+        private void btn_run_Click(object sender, EventArgs e)
+        {
+            //运动到上料位置
+            GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisA.LinkIndex, true, GlobalVar.Point_FeedLeft * GlobalVar.ServCMDRate, false);//运动到托盘上料位置
+            GlobalVar.AxisPCI.WaitSigleMoveFinished(GlobalVar.AxisA.LinkIndex);//等待运动完成
+            GlobalVar.AxisPCI.SuckerMotion(1, true);
+            WaitBAxisMove();//下料轴移动到安全区域               
+            GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisA.LinkIndex, true, (GlobalVar.Point_FeedRight) * GlobalVar.ServCMDRate, false);//运动到IC上料位置
+            GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisC.LinkIndex, true, GlobalVar.Point_ICFeed * GlobalVar.MotorRate, false);//IC轴到上料位置
+            GlobalVar.AxisPCI.WaitAllMoveFinished();//等待运动完成
+            GlobalVar.AxisPCI.SuckerMotion(1, false);
+            GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisA.LinkIndex, true, (GlobalVar.Point_FeedLeft) * GlobalVar.ServCMDRate, false);//运动到托盘上料位置
+
+            //运动到拍照位置
+            GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisC.LinkIndex, true, (GlobalVar.Point_ICPhotoPosition) * GlobalVar.MotorRate, false);
+            GlobalVar.AxisPCI.WaitSigleMoveFinished(GlobalVar.AxisC.LinkIndex);
+            runCommand(null);
+
+            //pcs上料
+            //运动到上料位置
+            GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisA.LinkIndex, true, (GlobalVar.Point_FeedLeft) * GlobalVar.ServCMDRate, false);//运动到托盘上料位置          
+            GlobalVar.AxisPCI.WaitSigleMoveFinished(GlobalVar.AxisA.LinkIndex);//等待运动完成
+
+            GlobalVar.AxisPCI.SuckerMotion(4, true);//吸取
+            WaitBAxisMove();//下料轴移动到安全区域               
+            GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisA.LinkIndex, true, (GlobalVar.Point_FeedRight) * GlobalVar.ServCMDRate, false);//运动到IC上料位置
+            GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisD.LinkIndex, true, (GlobalVar.Point_PCSFeed) * GlobalVar.MotorRate, false);//到PCS上料位置
+            GlobalVar.AxisPCI.WaitAllMoveFinished();//等待运动完成
+            GlobalVar.AxisPCI.SuckerMotion(4, false);//放置
+            GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisA.LinkIndex, true, (GlobalVar.Point_FeedLeft) * GlobalVar.ServCMDRate, false);//运动到托盘上料位置
+                                                                                                                                  // GlobalVar.AxisPCI.WaitAllMoveFinished();
+            GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisD.LinkIndex, true, (GlobalVar.Point_PCSPhotoPosition) * GlobalVar.MotorRate, false);//PCS拍照位置
+            GlobalVar.AxisPCI.WaitSigleMoveFinished(GlobalVar.AxisD.LinkIndex);
+            GlobalVar.AxisPCI.SuckerMotion(5, true);
+            GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisD.LinkIndex, true, (GlobalVar.Point_PCSWaitPosition) * GlobalVar.MotorRate, false);//PCS等待位置
+            Thread.Sleep(1000);
+            GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisD.LinkIndex, true, GlobalVar.Point_PCSPhotoPosition * GlobalVar.MotorRate, false);
+            GlobalVar.AxisPCI.WaitSigleMoveFinished(GlobalVar.AxisD.LinkIndex);
+            GlobalVar.AxisPCI.SuckerMotion(5, false);
+            GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisD.LinkIndex, true, (GlobalVar.Point_PCSFeed) * GlobalVar.MotorRate, false);//PCS上料位置
+
+            GlobalVar.AxisPCI.ClearAxisError(GlobalVar.AxisB.LinkIndex);
+            //运动到上料位置
+            GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisB.LinkIndex, true, (GlobalVar.Point_DropLeft) * GlobalVar.ServCMDRate, false);//运动到托盘下料位置
+
+            GlobalVar.AxisPCI.WaitAllMoveFinished();//等待运动完成            
+            GlobalVar.AxisPCI.SuckerMotion(3, true);
+            WaitAAxisMove();//下料轴移动到安全区域               
+            GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisB.LinkIndex, true, (GlobalVar.Point_DropRight) * GlobalVar.ServCMDRate, false);//运动到PCS下料料位置
+            GlobalVar.AxisPCI.WaitAllMoveFinished();//等待运动完成
+            GlobalVar.AxisPCI.SuckerMotion(3, false);
+        }
+
+
+
+        private void btn_Reset_Click(object sender, EventArgs e)
+        {
+            Thread thd = new Thread(ResetFunction);
+            thd.IsBackground = true;
+            thd.Name = "复位线程";
+            thd.Start();
+        }
+
+        private void ResetFunction()
+        {
+            try
+            {
+                GlobalVar.AxisPCI.StopAllMove();//停止所有轴的运动
+                for (int i = 0; i < GlobalVar.AxisPCI.AxisCount; i++)
+                {
+                    GlobalVar.AxisPCI.ClearAxisError(i);//清除所有轴的错误
+                }
+                GlobalVar.AxisPCI.ResetServ();//开始复位
+                Thread.Sleep(200);
+                GlobalVar.AxisPCI.WaitAllMoveFinished();//等待轴复位完成，主要用于提示【待机中】
+                GlobalVar.Machine.Reset = false;
+            }
+            catch (Exception ex)
+            {
+                MsgBox("机台复位异常：" + ex.Message, Color.Red, MessageBoxButtons.OK);
+            }
+        }
+
+        private void btn_FeedCompleteSign_Click(object sender, EventArgs e)
+        {
+            GlobalVar.Feed_Modbus.AddMsgList(GlobalVar.Feed_Modbus.Coils.AllowRun, true);
+            bool tmp = GlobalVar.Feed_Modbus.Coils.BoardArrival.Value;
+            if (GlobalVar.Feed_Modbus.Coils.BoardReady.Value)
+                GlobalVar.Feed_Modbus.AddMsgList(GlobalVar.Feed_Modbus.Coils.CommitSignal, true);
+        }
+
+        private void btn_DropCompleteSign_Click(object sender, EventArgs e)
+        {
+            GlobalVar.Drop_Modbus.AddMsgList(GlobalVar.Drop_Modbus.Coils.AllowRun, true);
+            if (GlobalVar.Drop_Modbus.Coils.BoardReady.Value)
+                GlobalVar.Drop_Modbus.AddMsgList(GlobalVar.Drop_Modbus.Coils.CommitSignal, true);
+        }
+
+        private void combox_Axis_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            switch (combox_Axis.SelectedIndex)
+            {
+                case 0://轴A
+                    groupBox_SetSpeed.Visible = true;
+                    label_suction1.Text = "左吸气:";
+                    label_Operate.Text = "放置位置";
+                    label_Operate.Visible = true;
+                    textBox_OperatePosition.Visible = true;
+                    label21.Visible = true;
+                    btn_MoveToOperate.Visible = true;
+                    btn_SaveOperate.Visible = true;
+                    label_leftsuckerUp.Visible = true;
+                    label_RightSucker.Visible = true;
+                    label_cylinder.Visible = true;
+                    cb_Cylinder.Visible = true;
+                    label_Up.Visible = true;
+                    label_Down.Visible = true;
+                    label_suction1.Visible = true;
+                    cb_Suction.Visible = true;
+                    label_suction2.Visible = true;
+                    cb_Suction2.Visible = true;
+                    label_WaitPosition.Visible = false;
+                    tb_WaitPosition.Visible = false;
+                    label_mm.Visible = false;
+                    btn_MoveToWait.Visible = false;
+                    btn_SaveWait.Visible = false;
+                    label_speed.Visible = true;
+                    comboBox_Speed_Run.Visible = true;
+                    label_percent.Visible = true;
+                    AxisNum = 4;
+                    textBox_RefPosition.Text = GlobalVar.Point_FeedLeft.ToString("0.000");
+                    textBox_OperatePosition.Text = GlobalVar.Point_FeedRight.ToString("0.000");
+                    break;
+                case 1://轴B
+                    groupBox_SetSpeed.Visible = true;
+                    label_suction1.Text = "吸气:";
+                    label_Operate.Text = "吸料位置:";
+                    label_Operate.Visible = true;
+                    textBox_OperatePosition.Visible = true;
+                    label21.Visible = true;
+                    btn_MoveToOperate.Visible = true;
+                    btn_SaveOperate.Visible = true;
+                    label_leftsuckerUp.Visible = true;
+                    label_RightSucker.Visible = false;
+                    label_Up.Visible = true;
+                    label_Down.Visible = true;
+                    label_suction1.Visible = true;
+                    cb_Suction.Visible = true;
+                    label_suction2.Visible = false;
+                    cb_Suction2.Visible = false;
+                    label_WaitPosition.Visible = false;
+                    tb_WaitPosition.Visible = false;
+                    label_mm.Visible = false;
+                    btn_MoveToWait.Visible = false;
+                    btn_SaveWait.Visible = false;
+                    label_speed.Visible = true;
+                    comboBox_Speed_Run.Visible = true;
+                    label_percent.Visible = true;
+                    label_Up.Visible = true;
+                    label_Down.Visible = true;
+                    AxisNum = 5;
+                    textBox_RefPosition.Text = GlobalVar.Point_DropRight.ToString("0.000");
+                    textBox_OperatePosition.Text = GlobalVar.Point_DropLeft.ToString("0.000");
+                    break;
+                case 2://轴C
+                    groupBox_SetSpeed.Visible = true;
+                    label_suction1.Visible = false;
+                    cb_Suction.Visible = false;
+                    label_Operate.Text = "拍照位置";
+                    label_Operate.Visible = true;
+                    textBox_OperatePosition.Visible = true;
+                    label21.Visible = true;
+                    btn_MoveToOperate.Visible = true;
+                    btn_SaveOperate.Visible = true;
+                    label_leftsuckerUp.Visible = false;
+                    label_RightSucker.Visible = false;
+                    label_cylinder.Visible = false;
+                    cb_Cylinder.Visible = false;
+                    label_suction2.Visible = false;
+                    cb_Suction2.Visible = false;
+                    label_WaitPosition.Visible = false;
+                    tb_WaitPosition.Visible = false;
+                    label_mm.Visible = false;
+                    btn_MoveToWait.Visible = false;
+                    btn_SaveWait.Visible = false;
+                    label_speed.Visible = false;
+                    comboBox_Speed_Run.Visible = false;
+                    label_percent.Visible = false;
+                    label_Up.Visible = false;
+                    label_Down.Visible = false;
+                    AxisNum = 6;
+                    textBox_RefPosition.Text = GlobalVar.Point_ICFeed.ToString("0.0");
+                    textBox_OperatePosition.Text = GlobalVar.Point_ICPhotoPosition.ToString("0.0");
+                    break;
+                case 3://轴D
+                    groupBox_SetSpeed.Visible = true;
+                    label_suction1.Visible = false;
+                    label_suction1.Text = "吸取";
+                    cb_Suction.Visible = false;
+                    label_leftsuckerUp.Visible = true;
+                    label_RightSucker.Visible = false;
+                    label_Operate.Text = "拍照位置";
+                    label_Operate.Visible = true;
+                    textBox_OperatePosition.Visible = true;
+                    label21.Visible = true;
+                    btn_MoveToOperate.Visible = true;
+                    btn_SaveOperate.Visible = true;
+                    label_cylinder.Visible = true;
+                    cb_Cylinder.Visible = true;
+                    label_suction2.Visible = false;
+                    cb_Suction2.Visible = false;
+                    label_WaitPosition.Visible = true;
+                    tb_WaitPosition.Visible = true;
+                    label_mm.Visible = true;
+                    btn_MoveToWait.Visible = true;
+                    btn_SaveWait.Visible = true;
+                    label_speed.Visible = false;
+                    comboBox_Speed_Run.Visible = false;
+                    label_percent.Visible = false;
+                    AxisNum = 7;
+                    label_Up.Visible = true;
+                    label_Down.Visible = true;
+                    label_suction1.Visible = true;
+                    cb_Suction.Visible = true;
+                    textBox_RefPosition.Text = GlobalVar.Point_PCSFeed.ToString("0.0");
+                    textBox_OperatePosition.Text = GlobalVar.Point_PCSPhotoPosition.ToString("0.0");
+                    tb_WaitPosition.Text = GlobalVar.Point_PCSWaitPosition.ToString("0.0");
+                    break;
+                case 4://轴X
+                    groupBox_SetSpeed.Visible = false;
+                    label_suction1.Visible = false;
+                    cb_Suction.Visible = false;
+                    label_leftsuckerUp.Visible = false;
+                    label_RightSucker.Visible = false;
+                    label_Operate.Visible = false;
+                    label_cylinder.Visible = false;
+                    cb_Cylinder.Visible = false;
+                    label_suction2.Visible = false;
+                    cb_Suction2.Visible = false;
+                    label_WaitPosition.Visible = false;
+                    tb_WaitPosition.Visible = false;
+                    label_mm.Visible = false;
+                    btn_MoveToWait.Visible = false;
+                    btn_SaveWait.Visible = false;
+                    label_speed.Visible = false;
+                    comboBox_Speed_Run.Visible = false;
+                    label_percent.Visible = false;
+                    AxisNum = 0;
+                    label_Up.Visible = false;
+                    label_Down.Visible = false;
+                    textBox_RefPosition.Text = GlobalVar.Ref_Point_AxisX.ToString("0.000");
+                    textBox_OperatePosition.Visible = false;
+                    btn_MoveToOperate.Visible = false;
+                    btn_SaveOperate.Visible = false;
+                    label21.Visible = false;
+                    break;
+                case 5://轴Y
+                    groupBox_SetSpeed.Visible = false;
+                    label_suction1.Visible = false;
+                    cb_Suction.Visible = false;
+                    label_Operate.Text = "结束位置";
+                    label_leftsuckerUp.Visible = false;
+                    label_RightSucker.Visible = false;
+                    label_cylinder.Visible = false;
+                    cb_Cylinder.Visible = false;
+                    label_suction2.Visible = false;
+                    cb_Suction2.Visible = false;
+                    label_WaitPosition.Visible = false;
+                    tb_WaitPosition.Visible = false;
+                    label_mm.Visible = false;
+                    btn_MoveToWait.Visible = false;
+                    btn_SaveWait.Visible = false;
+                    label_speed.Visible = false;
+                    comboBox_Speed_Run.Visible = false;
+                    label_percent.Visible = false;
+                    AxisNum = 1;
+                    label_Up.Visible = false;
+                    label_Down.Visible = false;
+                    textBox_RefPosition.Text = GlobalVar.Ref_Point_AxisY.ToString("0.000");
+                    textBox_OperatePosition.Text = GlobalVar.End_Point_AxisY.ToString("0.000");
+                    break;
+            }
+        }
+
+        private void cb_Cylinder_CheckedChanged(object sender, EventArgs e)
+        {
+            switch (AxisNum)
+            {
+                case 4:
+                    if (cb_Cylinder.Checked) GlobalVar.AxisPCI.SetDO(GlobalVar.AxisPCI.CylinderFeed, true);
+                    else GlobalVar.AxisPCI.SetDO(GlobalVar.AxisPCI.CylinderFeed, false);
+                    break;
+                case 5:
+                    if (cb_Cylinder.Checked) GlobalVar.AxisPCI.SetDO(GlobalVar.AxisPCI.CylinderDrop, true);
+                    else GlobalVar.AxisPCI.SetDO(GlobalVar.AxisPCI.CylinderDrop, false);
+                    break;
+                case 7:
+                    if (cb_Cylinder.Checked) GlobalVar.AxisPCI.SetDO(GlobalVar.AxisPCI.CylinderPCS, true);
+                    else GlobalVar.AxisPCI.SetDO(GlobalVar.AxisPCI.CylinderPCS, false);
+                    break;
+            }
+        }
+
+        private void cb_Suction2_CheckedChanged(object sender, EventArgs e)
+        {
+            if (cb_Suction2.Checked) GlobalVar.AxisPCI.SetDO(GlobalVar.AxisPCI.CylinderRightUpper, true);
+            else GlobalVar.AxisPCI.SetDO(GlobalVar.AxisPCI.CylinderRightUpper, false);
+        }
+
+        private void cb_Suction_CheckedChanged(object sender, EventArgs e)
+        {
+            switch (AxisNum)
+            {
+                case 4:
+                    if (cb_Suction.Checked) GlobalVar.AxisPCI.SetDO(GlobalVar.AxisPCI.CylinderLeftUpper, true);
+                    else GlobalVar.AxisPCI.SetDO(GlobalVar.AxisPCI.CylinderLeftUpper, false);
+
+                    break;
+                case 5:
+                    if (cb_Suction.Checked) GlobalVar.AxisPCI.SetDO(GlobalVar.AxisPCI.CylinderDropUpper, true);
+                    else GlobalVar.AxisPCI.SetDO(GlobalVar.AxisPCI.CylinderDropUpper, false);
+                    break;
+                case 7:
+                    if (cb_Suction.Checked) GlobalVar.AxisPCI.SetDO(GlobalVar.AxisPCI.CylinderPCSUpper, true);
+                    else GlobalVar.AxisPCI.SetDO(GlobalVar.AxisPCI.CylinderPCSUpper, false);
+                    break;
+            }
+        }
+
+        private void textBox_TargetPosition_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            //判断是否是数字
+            if (((int)e.KeyChar < 48 || (int)e.KeyChar > 57) && (int)e.KeyChar != 8 && (int)e.KeyChar != 46 && e.KeyChar != '-') e.Handled = true;
+            if ((int)e.KeyChar == 46)
+            {
+                //小数点不能在第一位
+                if (tb.Text.Length <= 0) e.Handled = true;
+            }
+        }
+
+        private void btn_moveToTarget_Click(object sender, EventArgs e)
+        {
+            if (textBox_TargetPosition.Text == "")
+            {
+                MessageBox.Show("位置不能为空！");
+                return;
+            }
+            if (AxisNum == 4)
+            {
+                if (GlobalVar.AxisPCI.Position_B < GlobalVar.DropSaveDistance)
+                {
+                    MessageBox.Show("B轴不在安全区域，禁止运动!");
+                    return;
+                }
+            }
+            if (AxisNum == 5)
+            {
+                if (GlobalVar.AxisPCI.Position_A > GlobalVar.FeedSaveDistance)
+                {
+                    MessageBox.Show("A轴不在安全区域，禁止运动!");
+                    return;
+                }
+            }
+            double movevalue = Convert.ToDouble(textBox_TargetPosition.Text);
+            if ((AxisNum == 4) || (AxisNum == 5) || AxisNum == 0 || AxisNum == 1) movevalue *= GlobalVar.ServCMDRate;
+            if ((AxisNum == 6) || (AxisNum == 7)) movevalue *= GlobalVar.MotorRate;
+            GlobalVar.AxisPCI.MoveDIR(AxisNum, true, movevalue, false);
+        }
+
+        private void btn_MoveToRef_Click(object sender, EventArgs e)
+        {
+            if (textBox_RefPosition.Text == "")
+            {
+                MessageBox.Show("位置不能为空！");
+                return;
+            }
+            if (AxisNum == 4)
+            {
+                if (GlobalVar.AxisPCI.Position_B < GlobalVar.DropSaveDistance)
+                {
+                    MessageBox.Show("B轴不在安全区域，禁止运动!");
+                    return;
+                }
+            }
+            if (AxisNum == 5)
+            {
+                if (GlobalVar.AxisPCI.Position_A > GlobalVar.FeedSaveDistance)
+                {
+                    MessageBox.Show("A轴不在安全区域，禁止运动!");
+                    return;
+                }
+            }
+            double movevalue = Convert.ToDouble(textBox_RefPosition.Text);
+            if ((AxisNum == 4) || (AxisNum == 5) || AxisNum == 0 || AxisNum == 1) movevalue *= GlobalVar.ServCMDRate;
+            if ((AxisNum == 6) || (AxisNum == 7)) movevalue *= GlobalVar.MotorRate;
+            GlobalVar.AxisPCI.MoveDIR(AxisNum, true, movevalue, false);
+        }
+
+        private void btn_MoveToOperate_Click(object sender, EventArgs e)
+        {
+            if (textBox_OperatePosition.Text == "")
+            {
+                MessageBox.Show("位置不能为空！");
+                return;
+            }
+            if (AxisNum == 4)
+            {
+                if (GlobalVar.AxisPCI.Position_B < GlobalVar.DropSaveDistance)
+                {
+                    MessageBox.Show("B轴不在安全区域，禁止运动!");
+                    return;
+                }
+            }
+            if (AxisNum == 5)
+            {
+                if (GlobalVar.AxisPCI.Position_A > GlobalVar.FeedSaveDistance)
+                {
+                    MessageBox.Show("A轴不在安全区域，禁止运动!");
+                    return;
+                }
+            }
+            GlobalVar.AxisPCI.ClearAxisError(AxisNum);
+            double movevalue = Convert.ToDouble(textBox_OperatePosition.Text);
+            if ((AxisNum == 4) || (AxisNum == 5) || AxisNum == 0 || AxisNum == 1) movevalue *= GlobalVar.ServCMDRate;
+            if ((AxisNum == 6) || (AxisNum == 7)) movevalue *= GlobalVar.MotorRate;
+            GlobalVar.AxisPCI.MoveDIR(AxisNum, true, movevalue, false);
+
+        }
+
+        private void btn_MoveToWait_Click(object sender, EventArgs e)
+        {
+            if (tb_WaitPosition.Text == "")
+            {
+                MessageBox.Show("位置不能为空！");
+                return;
+            }
+            double movevalue = Convert.ToDouble(tb_WaitPosition.Text) * GlobalVar.MotorRate;
+            GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisD.LinkIndex, true, movevalue, false);
+        }
+
+        private void btn_SaveRef_Click(object sender, EventArgs e)
+        {
+            switch (AxisNum)
+            {
+                case 0:
+                    GlobalVar.Ref_Point_AxisX = Convert.ToDouble(textBox_RefPosition.Text);
+                    myFunction.WriteIniString(GlobalVar.gl_inisection_Axis, GlobalVar.gl_iniKey_RefX, GlobalVar.Ref_Point_AxisX.ToString());
+                    break;
+                case 1:
+                    GlobalVar.Ref_Point_AxisY = Convert.ToDouble(textBox_RefPosition.Text);
+                    myFunction.WriteIniString(GlobalVar.gl_inisection_Axis, GlobalVar.gl_iniKey_RefY, GlobalVar.Ref_Point_AxisY.ToString());
+                    break;
+                case 4:
+                    GlobalVar.Point_FeedLeft = Convert.ToDouble(textBox_RefPosition.Text);
+                    myFunction.WriteIniString(GlobalVar.gl_inisection_Axis, GlobalVar.gl_iniKey_FeedLeft, GlobalVar.Point_FeedLeft.ToString());
+                    break;
+                case 5:
+                    GlobalVar.Point_DropRight = Convert.ToDouble(textBox_RefPosition.Text);
+                    myFunction.WriteIniString(GlobalVar.gl_inisection_Axis, GlobalVar.gl_iniKey_DropRight, GlobalVar.Point_DropRight.ToString());
+                    break;
+                case 6:
+                    GlobalVar.Point_ICFeed = Convert.ToDouble(textBox_RefPosition.Text);
+                    myFunction.WriteIniString(GlobalVar.gl_inisection_Axis, GlobalVar.gl_iniKey_ICFeed, GlobalVar.Point_ICFeed.ToString());
+                    break;
+                case 7:
+                    GlobalVar.Point_PCSFeed = Convert.ToDouble(textBox_RefPosition.Text);
+                    myFunction.WriteIniString(GlobalVar.gl_inisection_Axis, GlobalVar.gl_iniKey_PCSFeed, GlobalVar.Point_PCSFeed.ToString());
+                    break;
+            }
+        }
+
+        private void btn_WaitOperate_Click(object sender, EventArgs e)
+        {
+            switch (AxisNum)
+            {
+                case 4:
+                    GlobalVar.Point_FeedRight = Convert.ToDouble(textBox_OperatePosition.Text);
+                    myFunction.WriteIniString(GlobalVar.gl_inisection_Axis, GlobalVar.gl_iniKey_FeedRight, GlobalVar.Point_FeedRight.ToString());
+                    break;
+                case 5:
+                    GlobalVar.Point_DropLeft = Convert.ToDouble(textBox_OperatePosition.Text);
+                    myFunction.WriteIniString(GlobalVar.gl_inisection_Axis, GlobalVar.gl_iniKey_DropLeft, GlobalVar.Point_DropLeft.ToString());
+                    break;
+                case 6:
+                    GlobalVar.Point_ICPhotoPosition = Convert.ToDouble(textBox_OperatePosition.Text);
+                    myFunction.WriteIniString(GlobalVar.gl_inisection_Axis, GlobalVar.gl_iniKey_ICPhotoPosition, GlobalVar.Point_ICPhotoPosition.ToString());
+                    break;
+                case 7:
+                    GlobalVar.Point_PCSPhotoPosition = Convert.ToDouble(textBox_OperatePosition.Text);
+                    myFunction.WriteIniString(GlobalVar.gl_inisection_Axis, GlobalVar.gl_iniKey_PCSPhotoPosition, GlobalVar.Point_PCSPhotoPosition.ToString());
+                    break;
+            }
+        }
+
+        private void btn_SaveWait_Click(object sender, EventArgs e)
+        {
+            GlobalVar.Point_PCSWaitPosition = Convert.ToDouble(tb_WaitPosition.Text);
+            myFunction.WriteIniString(GlobalVar.gl_inisection_Axis, GlobalVar.gl_iniKey_PCSWaitPosition, GlobalVar.Point_PCSWaitPosition.ToString());
+        }
+
+        private void comboBox_Speed_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            double index = (Convert.ToDouble(comboBox_Speed.SelectedIndex) + 1) / 10;//所占比例
+            if (AxisNum == 4 || AxisNum == 5)
+            {
+                GlobalVar.RunHighVel *= index;//最高速度
+                GlobalVar.RunLowVel *= index;//初始速度
+                GlobalVar.RunAccVel *= index;//加速度
+                GlobalVar.RunDccVel *= index;//减速度
+
+                GlobalVar.AxisPCI.SetProp_VelHigh((uint)AxisNum, GlobalVar.RunHighVel, false);
+                GlobalVar.AxisPCI.SetProp_VelLow((uint)AxisNum, GlobalVar.RunLowVel, false);
+                GlobalVar.AxisPCI.SetProp_Acc((uint)AxisNum, GlobalVar.RunAccVel, false);
+                GlobalVar.AxisPCI.SetProp_Dec((uint)AxisNum, GlobalVar.RunDccVel, false);
+            }
+            else if (AxisNum == 6 || AxisNum == 7)
+            {
+                GlobalVar.RunHighVel_Motor *= index;//最高速度
+                GlobalVar.RunLowVel_Motor *= index;//初始速度
+                GlobalVar.RunAccVel_Motor *= index;//加速度
+                GlobalVar.RunDccVel_Motor *= index;//减速度
+
+                GlobalVar.AxisPCI.SetProp_VelHigh((uint)AxisNum, GlobalVar.RunHighVel_Motor, false);
+                GlobalVar.AxisPCI.SetProp_VelLow((uint)AxisNum, GlobalVar.RunLowVel_Motor, false);
+                GlobalVar.AxisPCI.SetProp_Acc((uint)AxisNum, GlobalVar.RunAccVel_Motor, false);
+                GlobalVar.AxisPCI.SetProp_Dec((uint)AxisNum, GlobalVar.RunDccVel_Motor, false);
+            }
+            else
+            {
+                GlobalVar.m_GPValue_RunVelHigh_move *= (uint)index;
+                GlobalVar.m_GPValue_RunDec_move *= (uint)index;
+                GlobalVar.m_GPValue_RunAcc_move *= (uint)index;
+                GlobalVar.m_GPValue_RunVelLow_move *= (uint)index;
+
+                GlobalVar.AxisPCI.SetProp_GPSpeed(GlobalVar.m_GPValue_RunVelHigh_move, GlobalVar.m_GPValue_RunVelLow_move, GlobalVar.m_GPValue_RunAcc_move, GlobalVar.m_GPValue_RunDec_move);
+            }
+        }
+
+        private void comboBox_Speed_Run_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            double index = (Convert.ToDouble(comboBox_Speed_Run.SelectedIndex) + 1) / 10;//所占比例
+            if (AxisNum == 4 || AxisNum == 5)
+            {
+                GlobalVar.RunHighVel_Operate *= index;//最高速度
+                GlobalVar.RunLowVel_Operate *= index;//初始速度
+                GlobalVar.RunAccVel_Operate *= index;//加速度
+                GlobalVar.RunDccVel_Operate *= index;//减速度
+
+                GlobalVar.AxisPCI.SetProp_VelHigh((uint)AxisNum, GlobalVar.RunHighVel_Operate, false);
+                GlobalVar.AxisPCI.SetProp_VelLow((uint)AxisNum, GlobalVar.RunLowVel_Operate, false);
+                GlobalVar.AxisPCI.SetProp_Acc((uint)AxisNum, GlobalVar.RunAccVel_Operate, false);
+                GlobalVar.AxisPCI.SetProp_Dec((uint)AxisNum, GlobalVar.RunDccVel_Operate, false);
+            }
+        }
+
+        private void btn_AxisZUp_Click(object sender, EventArgs e)
+        {
+            if (tb_AxisZInvertal.Text == "")
+            {
+                MessageBox.Show("相机轴行走距离不能为空！");
+                return;
+            }
+            double movevalue = Convert.ToDouble(tb_AxisZInvertal.Text) * GlobalVar.MotorRate;
+            GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisZ.LinkIndex, true, movevalue, true);
+        }
+
+        private void btn_AxisZDown_Click(object sender, EventArgs e)
+        {
+            if (tb_AxisZInvertal.Text == "")
+            {
+                MessageBox.Show("相机轴行走距离不能为空！");
+                return;
+            }
+            double movevalue = Convert.ToDouble(tb_AxisZInvertal.Text);
+            GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisZ.LinkIndex, false, movevalue, true);
+        }
+
+        private void btn_Load_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                FileOption SelectForm = new FileOption();
+                SelectForm.TopLevel = false;
+                SelectForm.Parent = this;
+                SelectForm.MdiParent = this.MdiParent;
+                if (SelectForm.ShowDialog() != DialogResult.OK) return;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("读取配置文件异常:" + ex.Message);
+            }
+        }
+
+        private void WindowRefresh_Tick(object sender, EventArgs e)
+        {
+            GetAxisPosition();
+            GetModbusStatus();
+        }
+
+        private void GetModbusStatus()
+        {
+            if (isFeedModbus)
+            {
+                if (GlobalVar.Feed_Modbus.Coils.ManualToAuto.Value) cb_Modbus.Checked = false;
+                else cb_Modbus.Checked = true;
+            }
+            else
+            {
+                if (GlobalVar.Drop_Modbus.Coils.ManualToAuto.Value) cb_Modbus.Checked = false;
+                else cb_Modbus.Checked = true;
+            }
+        }
+
+        private void GetAxisPosition()
+        {
+            label_location_X.Text = "X:" + GlobalVar.AxisPCI.Position_X.ToString("0.000") + "mm";
+            label_Location_Y.Text = "Y:" + GlobalVar.AxisPCI.Position_Y.ToString("0.000") + "mm";
+            switch (AxisNum)
+            {
+                case 0:
+                    this.lb_Position.Text = GlobalVar.AxisPCI.Position_X.ToString("0.000");
+                    break;
+                case 1:
+                    this.lb_Position.Text = GlobalVar.AxisPCI.Position_Y.ToString("0.000");
+                    break;
+                case 4:
+                    if (!GlobalVar.AxisPCI.Tag_CylinderFeed.CurrentValue)
+                    {
+                        label_Up.Text = "●";
+                        label_Up.ForeColor = Color.Green;
+                        label_Down.Text = "o";
+                        label_Down.ForeColor = Color.Black;
+                    }
+                    else
+                    {
+                        label_Up.Text = "o";
+                        label_Up.ForeColor = Color.Black;
+                        label_Down.Text = "●";
+                        label_Down.ForeColor = Color.Green;
+                    }
+                    if (GlobalVar.AxisPCI.Tag_FeedLeftCheck.CurrentValue)
+                    {
+                        label_leftsuckerUp.Text = "●";
+                        label_leftsuckerUp.ForeColor = Color.Red;
+                    }
+                    else
+                    {
+                        label_leftsuckerUp.Text = "o";
+                        label_leftsuckerUp.ForeColor = Color.Black;
+                    }
+                    if (GlobalVar.AxisPCI.Tag_FeedRightCheck.CurrentValue)
+                    {
+                        label_RightSucker.Text = "●";
+                        label_RightSucker.ForeColor = Color.Red;
+                    }
+                    else
+                    {
+                        label_RightSucker.Text = "o";
+                        label_RightSucker.ForeColor = Color.Black;
+                    }
+
+                    this.lb_Position.Text = GlobalVar.AxisPCI.Position_A.ToString("0.000");
+                    break;
+                case 5:
+                    if (!GlobalVar.AxisPCI.Tag_CylinderDrop.CurrentValue)
+                    {
+                        label_Up.Text = "●";
+                        label_Up.ForeColor = Color.Green;
+                        label_Down.Text = "o";
+                        label_Down.ForeColor = Color.Black;
+                    }
+                    else
+                    {
+                        label_Up.Text = "o";
+                        label_Up.ForeColor = Color.Black;
+                        label_Down.Text = "●";
+                        label_Down.ForeColor = Color.Green;
+                    }
+                    if (GlobalVar.AxisPCI.Tag_DropCheck.CurrentValue)
+                    {
+                        label_leftsuckerUp.Text = "●";
+                        label_leftsuckerUp.ForeColor = Color.Red;
+                    }
+                    else
+                    {
+                        label_RightSucker.Text = "o";
+                        label_RightSucker.ForeColor = Color.Black;
+                    }
+                    this.lb_Position.Text = GlobalVar.AxisPCI.Position_B.ToString("0.000");
+                    break;
+                case 6:
+                    this.lb_Position.Text = GlobalVar.AxisPCI.Position_C.ToString("0.0");
+                    break;
+                case 7:
+                    if (GlobalVar.AxisPCI.Tag_CylinderPCS.CurrentValue)
+                    {
+                        label_Up.Text = "●";
+                        label_Up.ForeColor = Color.Green;
+                        label_Down.Text = "o";
+                        label_Down.ForeColor = Color.Black;
+                    }
+                    else
+                    {
+                        label_Up.Text = "o";
+                        label_Up.ForeColor = Color.Black;
+                        label_Down.Text = "●";
+                        label_Down.ForeColor = Color.Green;
+                    }
+                    if (GlobalVar.AxisPCI.Tag_PCSCheck1.CurrentValue && GlobalVar.AxisPCI.Tag_PCSCheck2.CurrentValue && GlobalVar.AxisPCI.Tag_PCSCheck3.CurrentValue && GlobalVar.AxisPCI.Tag_PCSCheck4.CurrentValue)
+                    {
+                        label_leftsuckerUp.Text = "●";
+                        label_leftsuckerUp.ForeColor = Color.Red;
+                    }
+                    else
+                    {
+                        label_RightSucker.Text = "o";
+                        label_RightSucker.ForeColor = Color.Black;
+                    }
+                    this.lb_Position.Text = GlobalVar.AxisPCI.Position_D.ToString("0.0");
+                    break;
+
+            }
+        }
+        int index = 0;
+        private void btn_RunByStep_Click(object sender, EventArgs e)
+        {
+            myFunction.LoadICPointList();
+
+            double dis_X, dis_Y;
+            dis_X = GlobalVar.ICPointList[index].Pos_X;
+            dis_Y = GlobalVar.ICPointList[index].Pos_Y;
+            GlobalVar.AxisPCI.FixPointMotion(dis_X, dis_Y, false);
+            #region ic拍照解析流程
+            this.BeginInvoke(new Action(() =>
+            {
+                string result_Str = "";
+                if ((index > 4 && index < 7) || (index > 12))
+                    result_Str = GlobalVar.CCD.GrabImage_Working(index, GlobalVar.PictureSavePath, false);
+                else
+                {
+                    result_Str = GlobalVar.CCD.GrabImage_Working(index, GlobalVar.PictureSavePath, false);
+                }
+            }));
+            #endregion
+            GlobalVar.AxisPCI.WaitSigleMoveFinished(GlobalVar.AxisX.LinkIndex);
+            GlobalVar.AxisPCI.WaitSigleMoveFinished(GlobalVar.AxisY.LinkIndex);
+            index++;
+            if (index == 32) index = 0;
+        }
+        Thread th_ICPhoto;
+        private void btn_RunTotal_Click(object sender, EventArgs e)
+        {
+            myFunction.LoadICPointList();
+            th_ICPhoto = new Thread(ICPhotoAndAnalasit);
+            th_ICPhoto.IsBackground = true;
+            th_ICPhoto.Start();
+            this.btn_RunTotal.Enabled = false;
+            btn_puase.Enabled = true;
+        }
+
+        private void btn_SetGPRun_Click(object sender, EventArgs e)
+        {
+            if (AxisNum == 4 || AxisNum == 5)
+            {
+                GlobalVar.RunHighVel = Convert.ToDouble(numericUpDown_RunVelHigh.Value) * GlobalVar.ServCMDRate;
+                GlobalVar.RunLowVel = Convert.ToDouble(numericUpDown_RunVelLow.Value) * GlobalVar.ServCMDRate;
+                GlobalVar.RunAccVel = Convert.ToDouble(numericUpDown_RunAcc.Value) * GlobalVar.ServCMDRate;
+                GlobalVar.RunDccVel = Convert.ToDouble(numericUpDown_RunDec.Value) * GlobalVar.ServCMDRate;
+                GlobalVar.AxisPCI.SetAxisRunSpeed();
+
+                myFunction.WriteIniString(GlobalVar.gl_inisection_Axis, GlobalVar.gl_iniKey_RunSpeedHigh, GlobalVar.RunHighVel.ToString());
+                myFunction.WriteIniString(GlobalVar.gl_inisection_Axis, GlobalVar.gl_iniKey_RunSpeedLow, GlobalVar.RunLowVel.ToString());
+                myFunction.WriteIniString(GlobalVar.gl_inisection_Axis, GlobalVar.gl_iniKey_RunAcc, GlobalVar.RunAccVel.ToString());
+                myFunction.WriteIniString(GlobalVar.gl_inisection_Axis, GlobalVar.gl_iniKey_RunDcc, GlobalVar.RunDccVel.ToString());
+            }
+            if (AxisNum == 6 || AxisNum == 7)
+            {
+                GlobalVar.RunHighVel_Motor = Convert.ToDouble(numericUpDown_RunVelHigh.Value) * GlobalVar.MotorRate;
+                GlobalVar.RunLowVel_Motor = Convert.ToDouble(numericUpDown_RunVelLow.Value) * GlobalVar.MotorRate;
+                GlobalVar.RunAccVel_Motor = Convert.ToDouble(numericUpDown_RunAcc.Value) * GlobalVar.MotorRate;
+                GlobalVar.RunDccVel_Motor = Convert.ToDouble(numericUpDown_RunDec.Value) * GlobalVar.MotorRate;
+                GlobalVar.AxisPCI.SetAxisRunSpeed();
+
+                myFunction.WriteIniString(GlobalVar.gl_inisection_Axis, GlobalVar.gl_iniKey_RunHighVel_Motor, GlobalVar.RunHighVel_Motor.ToString());
+                myFunction.WriteIniString(GlobalVar.gl_inisection_Axis, GlobalVar.gl_iniKey_RunLowVel_Motor, GlobalVar.RunLowVel_Motor.ToString());
+                myFunction.WriteIniString(GlobalVar.gl_inisection_Axis, GlobalVar.gl_iniKey_RunAccVel_Motor, GlobalVar.RunAccVel_Motor.ToString());
+                myFunction.WriteIniString(GlobalVar.gl_inisection_Axis, GlobalVar.gl_iniKey_RunDccVel_Motor, GlobalVar.RunDccVel_Motor.ToString());
+            }
+        }
+
+        private void btn_puase_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                th_ICPhoto.Abort();
+                this.btn_RunTotal.Enabled = true;
+                GlobalVar.CCD.EndWork();
+            }
+            catch { }
+        }
+
+        private void cb_ICLight_CheckedChanged(object sender, EventArgs e)
+        {
+            if (cb_ICLight.Checked)
+            {
+                GlobalVar.AxisPCI.SetDO(GlobalVar.AxisPCI.LightControlSTB1, true);
+            }
+            else
+            {
+                GlobalVar.AxisPCI.SetDO(GlobalVar.AxisPCI.LightControlSTB1, false);
+            }
+        }
+
+        bool isFeedModbus = true;
+        private void comboBox_Modbus_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (comboBox_Modbus.SelectedIndex == 0)
+            {
+                isFeedModbus = true;
+            }
+            else isFeedModbus = false;
+        }
+
+        private void cb_Modbus_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!cb_Modbus.Checked)
+            {
+                if (isFeedModbus)
+                {
+                    GlobalVar.Feed_Modbus.AddMsgList(GlobalVar.Feed_Modbus.Coils.ManualToAuto, true);
+                    GlobalVar.Feed_Modbus.AddMsgList(GlobalVar.Feed_Modbus.Coils.AllowRun, true);
+                }
+                else
+                {
+                    GlobalVar.Drop_Modbus.AddMsgList(GlobalVar.Drop_Modbus.Coils.AllowRun, true);
+                    GlobalVar.Drop_Modbus.AddMsgList(GlobalVar.Drop_Modbus.Coils.ManualToAuto, true);
+                }
+                btn_UpJog.Enabled = false;
+                btn_DownJog.Enabled = false;
+                btn_ORG.Enabled = false;
+            }
+            else
+            {
+                if (isFeedModbus)
+                {
+                    GlobalVar.Feed_Modbus.AddMsgList(GlobalVar.Feed_Modbus.Coils.AllowRun, false);
+                    GlobalVar.Feed_Modbus.AddMsgList(GlobalVar.Feed_Modbus.Coils.ManualToAuto, false);
+                }
+                else
+                {
+                    GlobalVar.Drop_Modbus.AddMsgList(GlobalVar.Drop_Modbus.Coils.ManualToAuto, false);
+                    GlobalVar.Drop_Modbus.AddMsgList(GlobalVar.Drop_Modbus.Coils.AllowRun, false);
+                }
+                btn_UpJog.Enabled = true;
+                btn_DownJog.Enabled = true;
+                btn_ORG.Enabled = true;
+            }
+        }
+
+        private void btn_UpJog_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (isFeedModbus) GlobalVar.Feed_Modbus.AddMsgList(GlobalVar.Feed_Modbus.Coils.BoardUpJOG, false);
+            else GlobalVar.Drop_Modbus.AddMsgList(GlobalVar.Drop_Modbus.Coils.BoardUpJOG, false);
+        }
+
+        private void btn_UpJog_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (isFeedModbus) GlobalVar.Feed_Modbus.AddMsgList(GlobalVar.Feed_Modbus.Coils.BoardUpJOG, true);
+            else GlobalVar.Drop_Modbus.AddMsgList(GlobalVar.Drop_Modbus.Coils.BoardUpJOG, true);
+        }
+
+        private void btn_DownJog_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (isFeedModbus) GlobalVar.Feed_Modbus.AddMsgList(GlobalVar.Feed_Modbus.Coils.BoardUnderJOG, false);
+            else GlobalVar.Drop_Modbus.AddMsgList(GlobalVar.Drop_Modbus.Coils.BoardUnderJOG, false);
+        }
+
+        private void btn_DownJog_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (isFeedModbus) GlobalVar.Feed_Modbus.AddMsgList(GlobalVar.Feed_Modbus.Coils.BoardUnderJOG, true);
+            else GlobalVar.Drop_Modbus.AddMsgList(GlobalVar.Drop_Modbus.Coils.BoardUnderJOG, true);
+        }
+
+        private void btn_ORG_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (isFeedModbus) GlobalVar.Feed_Modbus.AddMsgList(GlobalVar.Feed_Modbus.Coils.BoardToORG, false);
+            else GlobalVar.Drop_Modbus.AddMsgList(GlobalVar.Drop_Modbus.Coils.BoardToORG, false);
+        }
+
+        private void btn_ORG_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (isFeedModbus) GlobalVar.Feed_Modbus.AddMsgList(GlobalVar.Feed_Modbus.Coils.BoardToORG, true);
+            else GlobalVar.Drop_Modbus.AddMsgList(GlobalVar.Drop_Modbus.Coils.BoardToORG, true);
+        }
+
+        private void cb_Blow_CheckedChanged(object sender, EventArgs e)
+        {
+            if (cb_Blow.Checked)
+            {
+                switch (AxisNum)
+                {
+                    case 4:
+                        GlobalVar.AxisPCI.SetDO(GlobalVar.AxisPCI.CylinderLeftLower, true);
+                        GlobalVar.AxisPCI.SetDO(GlobalVar.AxisPCI.CylinderRightLower, true);
+                        break;
+                    case 5:
+                        GlobalVar.AxisPCI.SetDO(GlobalVar.AxisPCI.CylinderDropLower, true);
+                        break;
+                    case 7:
+                        GlobalVar.AxisPCI.SetDO(GlobalVar.AxisPCI.CylinderPCSLower, true);
+                        break;
+                }
+            }
+            else
+            {
+                switch (AxisNum)
+                {
+                    case 4:
+                        GlobalVar.AxisPCI.SetDO(GlobalVar.AxisPCI.CylinderLeftLower, false);
+                        GlobalVar.AxisPCI.SetDO(GlobalVar.AxisPCI.CylinderRightLower, false);
+                        break;
+                    case 5:
+                        GlobalVar.AxisPCI.SetDO(GlobalVar.AxisPCI.CylinderDropLower, false);
+                        break;
+                    case 7:
+                        GlobalVar.AxisPCI.SetDO(GlobalVar.AxisPCI.CylinderPCSLower, false);
+                        break;
+                }
+            }
+        }
+
+        private void ParaForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            this.panel_CCD.Controls.Remove(GlobalVar.CCD);
+        }
+
+        private void textBox_SavePath_Click(object sender, EventArgs e)
+        {
+            FolderBrowserDialog folder = new FolderBrowserDialog();
+            folder.RootFolder = Environment.SpecialFolder.Desktop;
+            folder.ShowNewFolderButton = true;
+            if (folder.ShowDialog() == DialogResult.OK)
+            {
+                textBox_SavePath.Text = folder.SelectedPath;
+            }
+        }
+
+        private void btn_save_Click(object sender, EventArgs e)
+        {
+            if (Convert.ToDouble(textBox_Ref_X.Text) != GlobalVar.Ref_Point_AxisX)
+            {
+                GlobalVar.Ref_Point_AxisX = Convert.ToDouble(textBox_Ref_X.Text);
+                myFunction.WriteIniString(GlobalVar.gl_inisection_Axis, GlobalVar.gl_iniKey_RefX, textBox_Ref_X.Text);
+            }
+            if (Convert.ToDouble(textBox_Ref_Y.Text) != GlobalVar.Ref_Point_AxisY)
+            {
+                GlobalVar.Ref_Point_AxisY = Convert.ToDouble(textBox_Ref_Y.Text);
+                myFunction.WriteIniString(GlobalVar.gl_inisection_Axis, GlobalVar.gl_iniKey_RefY, textBox_Ref_Y.Text);
+            }
+            if (Convert.ToDouble(textBox_End_X.Text) != GlobalVar.End_Point_AxisX)
+            {
+                GlobalVar.End_Point_AxisX = Convert.ToDouble(textBox_End_X.Text);
+                myFunction.WriteIniString(GlobalVar.gl_inisection_Axis, GlobalVar.gl_iniKey_EndX, textBox_End_X.Text);
+            }
+            if (Convert.ToDouble(textBox_End_Y.Text) != GlobalVar.End_Point_AxisY)
+            {
+                GlobalVar.End_Point_AxisY = Convert.ToDouble(textBox_End_Y.Text);
+                myFunction.WriteIniString(GlobalVar.gl_inisection_Axis, GlobalVar.gl_iniKey_EndY, textBox_End_Y.Text);
+            }
+            if (Convert.ToDouble(textBox_Invertal_X.Text) != GlobalVar.Point_ICXInterval)
+            {
+                GlobalVar.Point_ICXInterval = Convert.ToDouble(textBox_Invertal_X.Text);
+                myFunction.WriteIniString(GlobalVar.gl_inisection_Axis, GlobalVar.gl_iniKey_ICXInterval, textBox_Invertal_X.Text);
+            }
+            if (Convert.ToDouble(textBox_Invertal_Y.Text) != GlobalVar.Point_ICYInterval)
+            {
+                GlobalVar.Point_ICYInterval = Convert.ToDouble(textBox_Invertal_Y.Text);
+                myFunction.WriteIniString(GlobalVar.gl_inisection_Axis, GlobalVar.gl_iniKey_ICYInterval, textBox_Invertal_Y.Text);
+            }
+            if (textBox_SavePath.Text != "")
+            {
+                GlobalVar.PictureSavePath = textBox_SavePath.Text;
+                myFunction.WriteIniString(GlobalVar.gl_inisection_CCD, GlobalVar.gl_iniKey_SavePath, GlobalVar.PictureSavePath);
+            }
+            else
+            {
+                MsgBox("保存图片地址不能为空!", Color.Orange, MessageBoxButtons.OK);
+            }
+        }
+
+        private void btn_setBoardSpeed_Click(object sender, EventArgs e)
+        {
+            if (tb_Speed.Text != "" && tb_Acc.Text != "")
+            {
+                int speed = Convert.ToInt32(tb_Speed.Text.Trim());
+                int acc = Convert.ToInt32(tb_Acc.Text.Trim());
+                if (isFeedModbus)//上料机
+                {
+                    if (!GlobalVar.Feed_Modbus.SendMsg(GlobalVar.Feed_Modbus.HoldingRegisters.BoardSpeed, speed))
+                        GlobalVar.Feed_Modbus.AddMsgList(GlobalVar.Feed_Modbus.HoldingRegisters.BoardSpeed, speed);
+
+                    if (!GlobalVar.Feed_Modbus.SendMsg(GlobalVar.Feed_Modbus.HoldingRegisters.BoardAcc, acc))
+                        GlobalVar.Feed_Modbus.AddMsgList(GlobalVar.Feed_Modbus.HoldingRegisters.BoardAcc, acc);
+
+                    if (!GlobalVar.Feed_Modbus.SendMsg(GlobalVar.Feed_Modbus.Coils.UpdatePara, false))
+                        GlobalVar.Feed_Modbus.AddMsgList(GlobalVar.Feed_Modbus.Coils.UpdatePara,false);
+                }
+                else
+                {
+                    if (!GlobalVar.Drop_Modbus.SendMsg(GlobalVar.Drop_Modbus.HoldingRegisters.BoardSpeed, speed))
+                        GlobalVar.Drop_Modbus.AddMsgList(GlobalVar.Drop_Modbus.HoldingRegisters.BoardSpeed, speed);
+
+                    if (!GlobalVar.Drop_Modbus.SendMsg(GlobalVar.Drop_Modbus.HoldingRegisters.BoardAcc, acc))
+                        GlobalVar.Drop_Modbus.AddMsgList(GlobalVar.Drop_Modbus.HoldingRegisters.BoardAcc, acc);
+
+                    if (!GlobalVar.Drop_Modbus.SendMsg(GlobalVar.Feed_Modbus.Coils.UpdatePara, false))
+                        GlobalVar.Drop_Modbus.AddMsgList(GlobalVar.Feed_Modbus.Coils.UpdatePara, false);
+                }
+            }
+
+        }
+    }
+}

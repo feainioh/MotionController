@@ -1,0 +1,74 @@
+[Product]
+Product=A82TFLEX
+[Sheet]
+BoardCount=17
+ICFailCount=167
+[COM]
+PcsCOM=COM1
+[SoftWare]
+LinkX=0
+LinkY=1
+LinkD=7
+LinkA=4
+LinkB=5
+LinkC=6
+LinkZ=3
+ZPosition=7128.000
+[CCDInfo]
+CCDSN=1111
+ICRunMatrix=true
+PictureSavePath=F:/IC_TESTDATA
+ICRunMatrix=true
+[Axis]
+RefX=279
+RefY=20
+EndX=80
+EndY=216
+ICXInterval = -71
+ICYInterval = 65.5
+Columns = 4
+Rows = 4
+HomeSpeed=80000
+RefSpeedHigh=240000
+RefSpeedLow=10000
+RefAcc =400000
+RefDcc = 400000
+RunSpeedHigh=500000
+RunSpeedLow =300000
+RunAcc =1000000
+RunDcc =1000000
+RunSpeedHighOperate=400000
+RunSpeedLowOperate=200000
+RunAccOperate=800000
+RunDccOperate=800000
+RunHighVel_Motor=70000
+RunLowVel_Motor=20000
+RunAccVel_Motor=120000
+RunDccVel_Motor=120000
+GPRunVelHigh=245000
+GPRunVelLow=200000
+GPRunAcc=500000
+GPRunDec=500000
+FeedLeft=-15
+FeedRight=675
+DropLeft=-5
+DropRight=579
+ICFeed=-23.5
+ICPhotoPosition=480
+PCSFeed=-22.2
+PCSPhotoPosition=551
+PCSWaitPosition=180
+FeedSaveDistance=400
+DropSaveDistance=100
+CylinderSuctionWaitTime=1000
+CylinderBlowWaitTime=800
+DropFeedPosition=100
+UPFeedPosition=400
+[IP]
+FeedIP=192.168.1.100
+DropIP=192.168.1.200
+[BoardFeedPara]
+FeedSpeed=10000
+FeedAcc=5000
+UPFeedPosition=500
+DropFeedPosition=-110

@@ -1,0 +1,443 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{F08BD440-179F-443B-93B6-56A3BCF51776}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>OQC_IC_CHECK_System</RootNamespace>
+    <AssemblyName>IC_PCS CHECK System</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>1</ApplicationRevision>
+    <ApplicationVersion>1.0.1.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Debug\IC_PCS CHECK System.xml</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>OQC.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="AdvMotAPI">
+      <HintPath>bin\Debug\DLL\AdvMotAPI.dll</HintPath>
+    </Reference>
+    <Reference Include="Basler.Pylon, Version=1.0.0.0, Culture=neutral, PublicKeyToken=e389355f398382ab, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\DLL\Basler.Pylon.dll</HintPath>
+    </Reference>
+    <Reference Include="ColorPickControl">
+      <HintPath>bin\Debug\DLL\ColorPickControl.dll</HintPath>
+    </Reference>
+    <Reference Include="DD_Mgd_3.02_8, Version=3.0.0.31720, Culture=neutral, PublicKeyToken=954bd47eaa10a352, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\DD_Mgd_3.02_8.dll</HintPath>
+    </Reference>
+    <Reference Include="DirectShowLib-2005, Version=2.1.0.0, Culture=neutral, PublicKeyToken=67e7b740cdfc2d3f, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\DirectShowLib-2005.dll</HintPath>
+    </Reference>
+    <Reference Include="halcondotnet, Version=12.0.2.0, Culture=neutral, PublicKeyToken=4973bed59ddbf2b8, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\halcondotnet.dll</HintPath>
+    </Reference>
+    <Reference Include="Interop.TaskScheduler, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+      <HintPath>bin\Debug\DLL\Interop.TaskScheduler.dll</HintPath>
+    </Reference>
+    <Reference Include="LayeredSkin">
+      <HintPath>bin\Debug\LayeredSkin.dll</HintPath>
+    </Reference>
+    <Reference Include="ModbusDll, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\DLL\ModbusDll.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Class\ModbusTool.cs" />
+    <Compile Include="Class\CModbus.Addr.cs" />
+    <Compile Include="Form\FileOption.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form\FileOption.designer.cs">
+      <DependentUpon>FileOption.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Form\ParaForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form\ParaForm.Designer.cs">
+      <DependentUpon>ParaForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MyControls\Either.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="MyControls\Either.designer.cs">
+      <DependentUpon>Either.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MyControls\Modbus\BoardController.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="MyControls\Modbus\BoardController.Designer.cs">
+      <DependentUpon>BoardController.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Class\DwgFuncApplication.cs" />
+    <Compile Include="Class\SerialPortHelp.cs" />
+    <Compile Include="Class\WindowsSchedule.cs" />
+    <Compile Include="Class\UserException.cs" />
+    <Compile Include="Form\Keyboard.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form\Keyboard.designer.cs">
+      <DependentUpon>Keyboard.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Form\MsgBox.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form\MsgBox.designer.cs">
+      <DependentUpon>MsgBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MyControls\Axis\Axis_DO.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="MyControls\Axis\Axis_DO.Designer.cs">
+      <DependentUpon>Axis_DO.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MyControls\Axis\Axis_DI.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="MyControls\Axis\Axis_DI.Designer.cs">
+      <DependentUpon>Axis_DI.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MyControls\Axis\AxisServerOn.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="MyControls\Axis\AxisServerOn.Designer.cs">
+      <DependentUpon>AxisServerOn.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MyControls\Axis\AxisEncoder.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="MyControls\Axis\AxisEncoder.Designer.cs">
+      <DependentUpon>AxisEncoder.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MyControls\Axis\AxisInterface.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="MyControls\Axis\AxisInterface.Designer.cs">
+      <DependentUpon>AxisInterface.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Class\Logs.cs" />
+    <Compile Include="Form\Load.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form\Load.Designer.cs">
+      <DependentUpon>Load.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Class\GlobalVar.cs" />
+    <Compile Include="MyControls\IC\ClientBlock.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="MyControls\IC\ClientBlock.Designer.cs">
+      <DependentUpon>ClientBlock.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Form\AxisForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form\AxisForm.Designer.cs">
+      <DependentUpon>AxisForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Class\Custom.Enum.cs" />
+    <Compile Include="Form\MainForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form\MainForm.Designer.cs">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Form\Frame.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form\Frame.Designer.cs">
+      <DependentUpon>Frame.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Form\ICForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form\ICForm.Designer.cs">
+      <DependentUpon>ICForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MyControls\Axis\IOStatus.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="MyControls\Axis\IOStatus.Designer.cs">
+      <DependentUpon>IOStatus.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MyControls\GroupBoxEX.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="MyControls\IC\OBJ_DWGDirect.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="MyControls\IC\OBJ_DWGDirect.designer.cs">
+      <DependentUpon>OBJ_DWGDirect.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MyControls\ImageButton.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="MyControls\TabControlNF.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="MyControls\TabControlTF.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="MyControls\VerticalProgressBar.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Class\MyFunction.cs" />
+    <Compile Include="Axis\PCI1285_E.cs" />
+    <Compile Include="Axis\PCI1285_E.Motion.cs" />
+    <Compile Include="Axis\PCI1285_E.Para.cs" />
+    <Compile Include="Axis\PCI1285_E.Signal.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="MyControls\IC\TipPoint.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="MyControls\IC\TipPoint.Designer.cs">
+      <DependentUpon>TipPoint.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Form\SetForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form\SetForm.Designer.cs">
+      <DependentUpon>SetForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Form\SystemForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form\SystemForm.Designer.cs">
+      <DependentUpon>SystemForm.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="Form\FileOption.resx">
+      <DependentUpon>FileOption.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form\Keyboard.resx">
+      <DependentUpon>Keyboard.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form\MsgBox.resx">
+      <DependentUpon>MsgBox.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form\ParaForm.resx">
+      <DependentUpon>ParaForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MyControls\Axis\AxisServerOn.resx">
+      <DependentUpon>AxisServerOn.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MyControls\Axis\Axis_DO.resx">
+      <DependentUpon>Axis_DO.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MyControls\Axis\Axis_DI.resx">
+      <DependentUpon>Axis_DI.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MyControls\Axis\AxisEncoder.resx">
+      <DependentUpon>AxisEncoder.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MyControls\Axis\AxisInterface.resx">
+      <DependentUpon>AxisInterface.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form\AxisForm.resx">
+      <DependentUpon>AxisForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form\Frame.resx">
+      <DependentUpon>Frame.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form\MainForm.resx">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form\ICForm.resx">
+      <DependentUpon>ICForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form\Load.resx">
+      <DependentUpon>Load.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MyControls\Axis\IOStatus.resx">
+      <DependentUpon>IOStatus.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MyControls\Either.resx">
+      <DependentUpon>Either.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MyControls\IC\OBJ_DWGDirect.resx">
+      <DependentUpon>OBJ_DWGDirect.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MyControls\IC\TipPoint.resx">
+      <DependentUpon>TipPoint.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MyControls\Modbus\BoardController.resx">
+      <DependentUpon>BoardController.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <SubType>Designer</SubType>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <Compile Include="Class\Custom.Class.cs" />
+    <EmbeddedResource Include="Form\SetForm.resx">
+      <DependentUpon>SetForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form\SystemForm.resx">
+      <DependentUpon>SystemForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <None Include="App.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Resources\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="picture\Action_BoardIn.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="picture\Action_BoardOut.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="picture\Action_Ink.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="picture\Btn_OFF.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="picture\Btn_ON.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="picture\Btn_Pause.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="picture\Btn_Run.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="picture\LightGray.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="picture\LightGray_Back.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="picture\LightGreen.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="picture\LightGreen_Back.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="picture\LightRed.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="picture\LightRed_Back.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="picture\NoSound.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="picture\Sound.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="picture\Action_BoardArrive.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="picture\Action_WaitBoard.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="picture\Action_BoardA.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="picture\App_Loading.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="picture\Loading.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="picture\close_2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="picture\close_1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="picture\OQC.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="picture\OQC.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="OQC.ico" />
+    <None Include="picture\Light_ON.png" />
+    <None Include="picture\Light_Off.png" />
+    <None Include="picture\LightOFF.png" />
+    <None Include="picture\AllAxis.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CCD\HalconCCD\HalconCCD.csproj">
+      <Project>{d2704811-a69f-4af8-8f00-bcd94da452a0}</Project>
+      <Name>HalconCCD</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
