@@ -84,7 +84,7 @@ namespace OQC_IC_CHECK_System
         /// <summary>
         /// 加载CAD文件 
         /// </summary>
-        ///<param name = "product" > 品目名 </ param >
+        ///<param name = "product" > 品目名 </param >
         internal void LoadCADFile(string product)
         {
             string ProductFile = GetProductIniPath(product + ".dwg");

@@ -123,8 +123,8 @@ namespace OQC_IC_CHECK_System
                 case "M"://允许下料机下料
                     message = "!" + msg + "#" + myfunction.CRC8(msg) + "\n";
                     SendMsg(message);//回复检查机          
-                    if (msg.Contains('0'))
-                        MyFunction.SendMessage(GlobalVar.gl_IntPtr_MainWindow, GlobalVar.WM_PCSAllowDropBoard, (IntPtr)0, (IntPtr)0);
+                    //if (msg.Contains('0'))
+                       // MyFunction.SendMessage(GlobalVar.gl_IntPtr_MainWindow, GlobalVar.WM_PCSAllowDropBoard, (IntPtr)0, (IntPtr)0);
                     if (msg.Contains('1'))
                         MyFunction.SendMessage(GlobalVar.gl_IntPtr_MainWindow, GlobalVar.WM_PCSForbideDrop, (IntPtr)0, (IntPtr)0);
                     break;
@@ -141,6 +141,9 @@ namespace OQC_IC_CHECK_System
                     }
                     break;
                 case "T":
+                    break;
+                case "S"://IC禁用模式【不处理】
+                    MyFunction.SendMessage(GlobalVar.gl_IntPtr_MainWindow, GlobalVar.WM_PCSArrive, (IntPtr)0, (IntPtr)0);
                     break;
                 default:
                     MsgBox("通信异常:未设定命令！", "串口通信异常", Color.Red);

@@ -848,47 +848,95 @@ namespace OQC_IC_CHECK_System
             {
                 case 1:
                     SetDO(CylinderFeed, true);//气缸下降
-                    int i = 0;
-                    Thread.Sleep(GlobalVar.CylinderSuctionWaitTime);
                     SetDO(CylinderLeftUpper, suck);//上料左吸取
+                    //Thread.Sleep(GlobalVar.CylinderSuctionWaitTime);
+                    for (int i = 0; i < 5; i++)
+                    {
+                        bool under = false;
+                        GetSingleDI(FeedCylinderUnder, ref under);
+                        if (under) break;
+                        Thread.Sleep(200);
+                    }
                     SetDO(CylinderLeftLower, blow);//上料左吹气
                     Thread.Sleep(100);//等待延时
                     SetDO(CylinderFeed, false);//气缸上升
                     if (!isSuck)//放置动作
                     {
-                        SetDO(CylinderLeftLower, !blow);//上料左吸取
+                        SetDO(CylinderLeftLower, !blow);//上料左吹气
                     }
-                    Thread.Sleep(GlobalVar.CylinderBlowWaitTime);
-                    break;
+                    for (int j=0;j<3;j++)
+                    {
+                        bool lmt = false;
+                        GetSingleDI(FeedCylinderUpper, ref lmt);
+                        if (lmt) break;
+                        Thread.Sleep(300);
+                    }
+                    //Thread.Sleep(GlobalVar.CylinderBlowWaitTime);
+                    break; 
                 case 2:
                     SetDO(CylinderFeed, true);//气缸下降                   
-                    Thread.Sleep(GlobalVar.CylinderSuctionWaitTime);
+                    //Thread.Sleep(GlobalVar.CylinderSuctionWaitTime);
                     SetDO(CylinderRightUpper, suck);//上料右吸取
+                    for (int i = 0; i < 5; i++)
+                    {
+                        bool under = false;
+                        GetSingleDI(FeedCylinderUnder, ref under);
+                        if (under) break;
+                        Thread.Sleep(200);
+                    }
                     SetDO(CylinderRightLower, blow);//上料右吹气
                     Thread.Sleep(100);//等待延时
                     if (!isSuck)
                         SetDO(CylinderRightLower, !blow);//上料右吹气
-                    SetDO(CylinderFeed, false);//气缸上升                   
-                    Thread.Sleep(GlobalVar.CylinderBlowWaitTime);
+                    SetDO(CylinderFeed, false);//气缸上升  
+                    for (int j = 0; j < 3; j++)
+                    {
+                        bool lmt = false;
+                        GetSingleDI(FeedCylinderUpper, ref lmt);
+                        if (lmt) break;
+                        Thread.Sleep(300);
+                    }
+                    //Thread.Sleep(GlobalVar.CylinderBlowWaitTime);
                     break;
                 case 3:
                     SetDO(CylinderDrop, true);//气缸下降
-                    Thread.Sleep(GlobalVar.CylinderSuctionWaitTime);
+                                              //Thread.Sleep(GlobalVar.CylinderSuctionWaitTime);
                     SetDO(CylinderDropUpper, suck);//下料吸取
+                    for (int i = 0; i < 5; i++)
+                    {
+                        bool under = false;
+                        GetSingleDI(FeedCylinderUnder, ref under);
+                        if (under) break;
+                        Thread.Sleep(200);
+                    }
                     SetDO(CylinderDropLower, blow);//下料吹气
                     Thread.Sleep(100);//等待延时
                     if (!isSuck)
                         SetDO(CylinderDropLower, !blow);//下料吹气
                     SetDO(CylinderDrop, false);//气缸上升
-                    Thread.Sleep(GlobalVar.CylinderBlowWaitTime);
+                    for (int j = 0; j < 3; j++)
+                    {
+                        bool lmt = false;
+                        GetSingleDI(DropCylinderUpper, ref lmt);
+                        if (lmt) break;
+                        Thread.Sleep(300);
+                    }
+                    //Thread.Sleep(GlobalVar.CylinderBlowWaitTime);
                     break;
                 case 4:
                     SetDO(CylinderFeed, true);//气缸下降
-                    Thread.Sleep(GlobalVar.CylinderSuctionWaitTime);
+                    //Thread.Sleep(GlobalVar.CylinderSuctionWaitTime);
                     SetDO(CylinderLeftUpper, suck);//上料左吸取
-                    SetDO(CylinderLeftLower, blow);//上料左吹气
                     SetDO(CylinderRightUpper, suck);//上料右吸取
+                    for (int i = 0; i < 5; i++)
+                    {
+                        bool under = false;
+                        GetSingleDI(FeedCylinderUnder, ref under);
+                        if (under) break;
+                        Thread.Sleep(200);
+                    }
                     SetDO(CylinderRightLower, blow);//上料右吹气
+                    SetDO(CylinderLeftLower, blow);//上料左吹气
                     Thread.Sleep(100);//等待延时
                     if (!isSuck)
                     {
@@ -896,7 +944,14 @@ namespace OQC_IC_CHECK_System
                         SetDO(CylinderLeftLower, !blow);//上料左吹气
                     }
                     SetDO(CylinderFeed, false);//气缸上升
-                    Thread.Sleep(GlobalVar.CylinderBlowWaitTime);
+                    for (int j = 0; j < 3; j++)
+                    {
+                        bool lmt = false;
+                        GetSingleDI(FeedCylinderUpper, ref lmt);
+                        if (lmt) break;
+                        Thread.Sleep(300);
+                    }
+                    //Thread.Sleep(GlobalVar.CylinderBlowWaitTime);
                     break;
                 case 5:
                     SetDO(CylinderPCS, true);//pcs气缸下降
@@ -910,7 +965,7 @@ namespace OQC_IC_CHECK_System
                     Thread.Sleep(GlobalVar.CylinderBlowWaitTime);
                     break;
                 default:
-                    throw new Exception("吸取动作异常:不存在当前吸盘");
+                    throw new Exception("吸取操作异常:不存在当前吸盘");
             }
         }
     }

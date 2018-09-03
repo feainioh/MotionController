@@ -30,17 +30,19 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
-            this.AxisAPosition = new System.Windows.Forms.ToolStripStatusLabel();
-            this.AxisBPosition = new System.Windows.Forms.ToolStripStatusLabel();
-            this.AxisCPosition = new System.Windows.Forms.ToolStripStatusLabel();
-            this.AxisDPosition = new System.Windows.Forms.ToolStripStatusLabel();
-            this.AxisXPosition = new System.Windows.Forms.ToolStripStatusLabel();
-            this.AxisYPosition = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel7 = new System.Windows.Forms.ToolStripStatusLabel();
             this.softVersion = new System.Windows.Forms.ToolStripStatusLabel();
             this.splitContainer_All = new System.Windows.Forms.SplitContainer();
+            this.groupBoxEx_Status = new OQC_IC_CHECK_System.GroupBoxEx();
+            this.label_Status = new System.Windows.Forms.Label();
+            this.btn_System = new OQC_IC_CHECK_System.ImageButton();
+            this.btn_Para = new OQC_IC_CHECK_System.ImageButton();
+            this.btn_IC = new OQC_IC_CHECK_System.ImageButton();
+            this.btn_Axis = new OQC_IC_CHECK_System.ImageButton();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.panel2 = new System.Windows.Forms.Panel();
+            this.btn_DropBoard = new OQC_IC_CHECK_System.ImageButton();
+            this.btn_LastBoard = new OQC_IC_CHECK_System.ImageButton();
             this.panel9 = new System.Windows.Forms.Panel();
             this.panel11 = new System.Windows.Forms.Panel();
             this.label_Err_Drop = new System.Windows.Forms.Label();
@@ -54,6 +56,10 @@
             this.label_Feed = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.panel_CCD = new System.Windows.Forms.Panel();
+            this.ioStatus_BoardOut = new OQC_IC_CHECK_System.IOStatus();
+            this.ioStatus_FPS = new OQC_IC_CHECK_System.IOStatus();
+            this.ioStatus_IC = new OQC_IC_CHECK_System.IOStatus();
+            this.ioStatus_BoardIn = new OQC_IC_CHECK_System.IOStatus();
             this.panel10 = new System.Windows.Forms.Panel();
             this.panel3 = new System.Windows.Forms.Panel();
             this.label17 = new System.Windows.Forms.Label();
@@ -87,23 +93,12 @@
             this.richTextBox_ShowStr = new System.Windows.Forms.RichTextBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.listView_AlarmFrequency = new System.Windows.Forms.ListView();
-            this.groupBoxEx_Status = new OQC_IC_CHECK_System.GroupBoxEx();
-            this.label_Status = new System.Windows.Forms.Label();
-            this.btn_System = new OQC_IC_CHECK_System.ImageButton();
-            this.btn_Para = new OQC_IC_CHECK_System.ImageButton();
-            this.btn_IC = new OQC_IC_CHECK_System.ImageButton();
-            this.btn_Axis = new OQC_IC_CHECK_System.ImageButton();
-            this.btn_DropBoard = new OQC_IC_CHECK_System.ImageButton();
-            this.btn_LastBoard = new OQC_IC_CHECK_System.ImageButton();
-            this.ioStatus_BoardOut = new OQC_IC_CHECK_System.IOStatus();
-            this.ioStatus_FPS = new OQC_IC_CHECK_System.IOStatus();
-            this.ioStatus_IC = new OQC_IC_CHECK_System.IOStatus();
-            this.ioStatus_BoardIn = new OQC_IC_CHECK_System.IOStatus();
             this.statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer_All)).BeginInit();
             this.splitContainer_All.Panel1.SuspendLayout();
             this.splitContainer_All.Panel2.SuspendLayout();
             this.splitContainer_All.SuspendLayout();
+            this.groupBoxEx_Status.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -127,7 +122,6 @@
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
-            this.groupBoxEx_Status.SuspendLayout();
             this.SuspendLayout();
             // 
             // statusStrip1
@@ -135,72 +129,25 @@
             this.statusStrip1.BackColor = System.Drawing.Color.CadetBlue;
             this.statusStrip1.Font = new System.Drawing.Font("微软雅黑", 18F);
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.AxisAPosition,
-            this.AxisBPosition,
-            this.AxisCPosition,
-            this.AxisDPosition,
-            this.AxisXPosition,
-            this.AxisYPosition,
             this.toolStripStatusLabel7,
             this.softVersion});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 860);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 864);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.ManagerRenderMode;
-            this.statusStrip1.Size = new System.Drawing.Size(1600, 40);
+            this.statusStrip1.Size = new System.Drawing.Size(1600, 36);
             this.statusStrip1.TabIndex = 1;
             this.statusStrip1.Text = "MachineStatus";
-            // 
-            // AxisAPosition
-            // 
-            this.AxisAPosition.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right;
-            this.AxisAPosition.Name = "AxisAPosition";
-            this.AxisAPosition.Size = new System.Drawing.Size(96, 35);
-            this.AxisAPosition.Text = "上料轴:";
-            // 
-            // AxisBPosition
-            // 
-            this.AxisBPosition.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right;
-            this.AxisBPosition.Name = "AxisBPosition";
-            this.AxisBPosition.Size = new System.Drawing.Size(96, 35);
-            this.AxisBPosition.Text = "下料轴:";
-            // 
-            // AxisCPosition
-            // 
-            this.AxisCPosition.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right;
-            this.AxisCPosition.Name = "AxisCPosition";
-            this.AxisCPosition.Size = new System.Drawing.Size(71, 35);
-            this.AxisCPosition.Text = "IC轴:";
-            // 
-            // AxisDPosition
-            // 
-            this.AxisDPosition.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right;
-            this.AxisDPosition.Name = "AxisDPosition";
-            this.AxisDPosition.Size = new System.Drawing.Size(93, 35);
-            this.AxisDPosition.Text = "PCS轴:";
-            // 
-            // AxisXPosition
-            // 
-            this.AxisXPosition.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right;
-            this.AxisXPosition.Name = "AxisXPosition";
-            this.AxisXPosition.Size = new System.Drawing.Size(63, 35);
-            this.AxisXPosition.Text = "X轴:";
-            // 
-            // AxisYPosition
-            // 
-            this.AxisYPosition.Name = "AxisYPosition";
-            this.AxisYPosition.Size = new System.Drawing.Size(58, 35);
-            this.AxisYPosition.Text = "Y轴:";
             // 
             // toolStripStatusLabel7
             // 
             this.toolStripStatusLabel7.Name = "toolStripStatusLabel7";
-            this.toolStripStatusLabel7.Size = new System.Drawing.Size(1049, 35);
+            this.toolStripStatusLabel7.Size = new System.Drawing.Size(1495, 31);
             this.toolStripStatusLabel7.Spring = true;
             // 
             // softVersion
             // 
             this.softVersion.Name = "softVersion";
-            this.softVersion.Size = new System.Drawing.Size(59, 35);
+            this.softVersion.Size = new System.Drawing.Size(59, 31);
             this.softVersion.Text = "Ver:";
             // 
             // splitContainer_All
@@ -222,6 +169,81 @@
             this.splitContainer_All.Size = new System.Drawing.Size(1600, 1045);
             this.splitContainer_All.SplitterDistance = 218;
             this.splitContainer_All.TabIndex = 0;
+            // 
+            // groupBoxEx_Status
+            // 
+            this.groupBoxEx_Status.BackColor = System.Drawing.Color.Red;
+            this.groupBoxEx_Status.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
+            this.groupBoxEx_Status.Controls.Add(this.label_Status);
+            this.groupBoxEx_Status.Location = new System.Drawing.Point(4, 697);
+            this.groupBoxEx_Status.Name = "groupBoxEx_Status";
+            this.groupBoxEx_Status.Radius = 10;
+            this.groupBoxEx_Status.Size = new System.Drawing.Size(212, 161);
+            this.groupBoxEx_Status.TabIndex = 4;
+            this.groupBoxEx_Status.TabStop = false;
+            this.groupBoxEx_Status.TitleFont = new System.Drawing.Font("宋体", 15F);
+            // 
+            // label_Status
+            // 
+            this.label_Status.Font = new System.Drawing.Font("微软雅黑", 26.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.label_Status.Location = new System.Drawing.Point(5, 17);
+            this.label_Status.Name = "label_Status";
+            this.label_Status.Size = new System.Drawing.Size(201, 126);
+            this.label_Status.TabIndex = 0;
+            this.label_Status.Text = "需要复位！";
+            this.label_Status.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // btn_System
+            // 
+            this.btn_System.BackColor = System.Drawing.Color.Crimson;
+            this.btn_System.Font = new System.Drawing.Font("微软雅黑", 42F, System.Drawing.FontStyle.Bold);
+            this.btn_System.ForeColor = System.Drawing.SystemColors.ControlLightLight;
+            this.btn_System.Location = new System.Drawing.Point(3, 524);
+            this.btn_System.Name = "btn_System";
+            this.btn_System.Size = new System.Drawing.Size(212, 164);
+            this.btn_System.TabIndex = 3;
+            this.btn_System.Text = "系统";
+            this.btn_System.UseVisualStyleBackColor = false;
+            this.btn_System.Click += new System.EventHandler(this.btn_System_Click);
+            // 
+            // btn_Para
+            // 
+            this.btn_Para.BackColor = System.Drawing.Color.BlueViolet;
+            this.btn_Para.Font = new System.Drawing.Font("微软雅黑", 42F, System.Drawing.FontStyle.Bold);
+            this.btn_Para.ForeColor = System.Drawing.SystemColors.ControlLightLight;
+            this.btn_Para.Location = new System.Drawing.Point(3, 351);
+            this.btn_Para.Name = "btn_Para";
+            this.btn_Para.Size = new System.Drawing.Size(212, 164);
+            this.btn_Para.TabIndex = 2;
+            this.btn_Para.Text = "手动";
+            this.btn_Para.UseVisualStyleBackColor = false;
+            this.btn_Para.Click += new System.EventHandler(this.btn_Para_Click);
+            // 
+            // btn_IC
+            // 
+            this.btn_IC.BackColor = System.Drawing.Color.DodgerBlue;
+            this.btn_IC.Font = new System.Drawing.Font("微软雅黑", 42F, System.Drawing.FontStyle.Bold);
+            this.btn_IC.ForeColor = System.Drawing.SystemColors.ControlLightLight;
+            this.btn_IC.Location = new System.Drawing.Point(4, 179);
+            this.btn_IC.Name = "btn_IC";
+            this.btn_IC.Size = new System.Drawing.Size(212, 164);
+            this.btn_IC.TabIndex = 1;
+            this.btn_IC.Text = "IC拍照";
+            this.btn_IC.UseVisualStyleBackColor = false;
+            this.btn_IC.Click += new System.EventHandler(this.btn_IC_Click);
+            // 
+            // btn_Axis
+            // 
+            this.btn_Axis.BackColor = System.Drawing.Color.LimeGreen;
+            this.btn_Axis.Font = new System.Drawing.Font("微软雅黑", 42F, System.Drawing.FontStyle.Bold);
+            this.btn_Axis.ForeColor = System.Drawing.SystemColors.ControlLightLight;
+            this.btn_Axis.Location = new System.Drawing.Point(4, 4);
+            this.btn_Axis.Name = "btn_Axis";
+            this.btn_Axis.Size = new System.Drawing.Size(212, 164);
+            this.btn_Axis.TabIndex = 0;
+            this.btn_Axis.Text = "轴控制";
+            this.btn_Axis.UseVisualStyleBackColor = false;
+            this.btn_Axis.Click += new System.EventHandler(this.btn_Axis_Click);
             // 
             // splitContainer1
             // 
@@ -259,6 +281,30 @@
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(1085, 787);
             this.panel2.TabIndex = 1;
+            // 
+            // btn_DropBoard
+            // 
+            this.btn_DropBoard.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(255)))));
+            this.btn_DropBoard.Font = new System.Drawing.Font("微软雅黑", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btn_DropBoard.Location = new System.Drawing.Point(908, 618);
+            this.btn_DropBoard.Name = "btn_DropBoard";
+            this.btn_DropBoard.Size = new System.Drawing.Size(157, 60);
+            this.btn_DropBoard.TabIndex = 34;
+            this.btn_DropBoard.Text = "下料机下料";
+            this.btn_DropBoard.UseVisualStyleBackColor = false;
+            this.btn_DropBoard.Click += new System.EventHandler(this.btn_DropBoard_Click);
+            // 
+            // btn_LastBoard
+            // 
+            this.btn_LastBoard.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
+            this.btn_LastBoard.Font = new System.Drawing.Font("微软雅黑", 21.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.btn_LastBoard.Location = new System.Drawing.Point(724, 618);
+            this.btn_LastBoard.Name = "btn_LastBoard";
+            this.btn_LastBoard.Size = new System.Drawing.Size(157, 60);
+            this.btn_LastBoard.TabIndex = 33;
+            this.btn_LastBoard.Text = "末次下料";
+            this.btn_LastBoard.UseVisualStyleBackColor = false;
+            this.btn_LastBoard.Click += new System.EventHandler(this.btn_LastBoard_Click);
             // 
             // panel9
             // 
@@ -408,6 +454,62 @@
             this.panel_CCD.Name = "panel_CCD";
             this.panel_CCD.Size = new System.Drawing.Size(695, 670);
             this.panel_CCD.TabIndex = 30;
+            // 
+            // ioStatus_BoardOut
+            // 
+            this.ioStatus_BoardOut.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("ioStatus_BoardOut.BackgroundImage")));
+            this.ioStatus_BoardOut.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.ioStatus_BoardOut.BtnPress = true;
+            this.ioStatus_BoardOut.Location = new System.Drawing.Point(820, 705);
+            this.ioStatus_BoardOut.MaximumSize = new System.Drawing.Size(246, 73);
+            this.ioStatus_BoardOut.MinimumSize = new System.Drawing.Size(246, 73);
+            this.ioStatus_BoardOut.Name = "ioStatus_BoardOut";
+            this.ioStatus_BoardOut.Size = new System.Drawing.Size(246, 73);
+            this.ioStatus_BoardOut.StatusImage = ((System.Drawing.Bitmap)(resources.GetObject("ioStatus_BoardOut.StatusImage")));
+            this.ioStatus_BoardOut.TabIndex = 29;
+            this.ioStatus_BoardOut.Title = "托盘下料";
+            // 
+            // ioStatus_FPS
+            // 
+            this.ioStatus_FPS.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("ioStatus_FPS.BackgroundImage")));
+            this.ioStatus_FPS.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.ioStatus_FPS.BtnPress = true;
+            this.ioStatus_FPS.Location = new System.Drawing.Point(551, 705);
+            this.ioStatus_FPS.MaximumSize = new System.Drawing.Size(246, 73);
+            this.ioStatus_FPS.MinimumSize = new System.Drawing.Size(246, 73);
+            this.ioStatus_FPS.Name = "ioStatus_FPS";
+            this.ioStatus_FPS.Size = new System.Drawing.Size(246, 73);
+            this.ioStatus_FPS.StatusImage = ((System.Drawing.Bitmap)(resources.GetObject("ioStatus_FPS.StatusImage")));
+            this.ioStatus_FPS.TabIndex = 28;
+            this.ioStatus_FPS.Title = "单反检查";
+            // 
+            // ioStatus_IC
+            // 
+            this.ioStatus_IC.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("ioStatus_IC.BackgroundImage")));
+            this.ioStatus_IC.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.ioStatus_IC.BtnPress = true;
+            this.ioStatus_IC.Location = new System.Drawing.Point(281, 705);
+            this.ioStatus_IC.MaximumSize = new System.Drawing.Size(246, 73);
+            this.ioStatus_IC.MinimumSize = new System.Drawing.Size(246, 73);
+            this.ioStatus_IC.Name = "ioStatus_IC";
+            this.ioStatus_IC.Size = new System.Drawing.Size(246, 73);
+            this.ioStatus_IC.StatusImage = ((System.Drawing.Bitmap)(resources.GetObject("ioStatus_IC.StatusImage")));
+            this.ioStatus_IC.TabIndex = 27;
+            this.ioStatus_IC.Title = "IC拍照";
+            // 
+            // ioStatus_BoardIn
+            // 
+            this.ioStatus_BoardIn.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("ioStatus_BoardIn.BackgroundImage")));
+            this.ioStatus_BoardIn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.ioStatus_BoardIn.BtnPress = true;
+            this.ioStatus_BoardIn.Location = new System.Drawing.Point(11, 705);
+            this.ioStatus_BoardIn.MaximumSize = new System.Drawing.Size(246, 73);
+            this.ioStatus_BoardIn.MinimumSize = new System.Drawing.Size(246, 73);
+            this.ioStatus_BoardIn.Name = "ioStatus_BoardIn";
+            this.ioStatus_BoardIn.Size = new System.Drawing.Size(246, 73);
+            this.ioStatus_BoardIn.StatusImage = ((System.Drawing.Bitmap)(resources.GetObject("ioStatus_BoardIn.StatusImage")));
+            this.ioStatus_BoardIn.TabIndex = 26;
+            this.ioStatus_BoardIn.Title = "托盘上料";
             // 
             // panel10
             // 
@@ -833,161 +935,6 @@
             this.listView_AlarmFrequency.UseCompatibleStateImageBehavior = false;
             this.listView_AlarmFrequency.View = System.Windows.Forms.View.Details;
             // 
-            // groupBoxEx_Status
-            // 
-            this.groupBoxEx_Status.BackColor = System.Drawing.Color.Red;
-            this.groupBoxEx_Status.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
-            this.groupBoxEx_Status.Controls.Add(this.label_Status);
-            this.groupBoxEx_Status.Location = new System.Drawing.Point(4, 697);
-            this.groupBoxEx_Status.Name = "groupBoxEx_Status";
-            this.groupBoxEx_Status.Radius = 10;
-            this.groupBoxEx_Status.Size = new System.Drawing.Size(212, 161);
-            this.groupBoxEx_Status.TabIndex = 4;
-            this.groupBoxEx_Status.TabStop = false;
-            this.groupBoxEx_Status.TitleFont = new System.Drawing.Font("宋体", 15F);
-            // 
-            // label_Status
-            // 
-            this.label_Status.Font = new System.Drawing.Font("微软雅黑", 26.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.label_Status.Location = new System.Drawing.Point(5, 17);
-            this.label_Status.Name = "label_Status";
-            this.label_Status.Size = new System.Drawing.Size(201, 126);
-            this.label_Status.TabIndex = 0;
-            this.label_Status.Text = "需要复位！";
-            this.label_Status.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // btn_System
-            // 
-            this.btn_System.BackColor = System.Drawing.Color.Crimson;
-            this.btn_System.Font = new System.Drawing.Font("微软雅黑", 42F, System.Drawing.FontStyle.Bold);
-            this.btn_System.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.btn_System.Location = new System.Drawing.Point(3, 524);
-            this.btn_System.Name = "btn_System";
-            this.btn_System.Size = new System.Drawing.Size(212, 164);
-            this.btn_System.TabIndex = 3;
-            this.btn_System.Text = "系统";
-            this.btn_System.UseVisualStyleBackColor = false;
-            this.btn_System.Click += new System.EventHandler(this.btn_System_Click);
-            // 
-            // btn_Para
-            // 
-            this.btn_Para.BackColor = System.Drawing.Color.BlueViolet;
-            this.btn_Para.Font = new System.Drawing.Font("微软雅黑", 42F, System.Drawing.FontStyle.Bold);
-            this.btn_Para.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.btn_Para.Location = new System.Drawing.Point(3, 351);
-            this.btn_Para.Name = "btn_Para";
-            this.btn_Para.Size = new System.Drawing.Size(212, 164);
-            this.btn_Para.TabIndex = 2;
-            this.btn_Para.Text = "手动";
-            this.btn_Para.UseVisualStyleBackColor = false;
-            this.btn_Para.Click += new System.EventHandler(this.btn_Para_Click);
-            // 
-            // btn_IC
-            // 
-            this.btn_IC.BackColor = System.Drawing.Color.DodgerBlue;
-            this.btn_IC.Font = new System.Drawing.Font("微软雅黑", 42F, System.Drawing.FontStyle.Bold);
-            this.btn_IC.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.btn_IC.Location = new System.Drawing.Point(4, 179);
-            this.btn_IC.Name = "btn_IC";
-            this.btn_IC.Size = new System.Drawing.Size(212, 164);
-            this.btn_IC.TabIndex = 1;
-            this.btn_IC.Text = "IC拍照";
-            this.btn_IC.UseVisualStyleBackColor = false;
-            this.btn_IC.Click += new System.EventHandler(this.btn_IC_Click);
-            // 
-            // btn_Axis
-            // 
-            this.btn_Axis.BackColor = System.Drawing.Color.LimeGreen;
-            this.btn_Axis.Font = new System.Drawing.Font("微软雅黑", 42F, System.Drawing.FontStyle.Bold);
-            this.btn_Axis.ForeColor = System.Drawing.SystemColors.ControlLightLight;
-            this.btn_Axis.Location = new System.Drawing.Point(4, 4);
-            this.btn_Axis.Name = "btn_Axis";
-            this.btn_Axis.Size = new System.Drawing.Size(212, 164);
-            this.btn_Axis.TabIndex = 0;
-            this.btn_Axis.Text = "轴控制";
-            this.btn_Axis.UseVisualStyleBackColor = false;
-            this.btn_Axis.Click += new System.EventHandler(this.btn_Axis_Click);
-            // 
-            // btn_DropBoard
-            // 
-            this.btn_DropBoard.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(128)))), ((int)(((byte)(255)))));
-            this.btn_DropBoard.Font = new System.Drawing.Font("微软雅黑", 18F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btn_DropBoard.Location = new System.Drawing.Point(908, 618);
-            this.btn_DropBoard.Name = "btn_DropBoard";
-            this.btn_DropBoard.Size = new System.Drawing.Size(157, 60);
-            this.btn_DropBoard.TabIndex = 34;
-            this.btn_DropBoard.Text = "下料机下料";
-            this.btn_DropBoard.UseVisualStyleBackColor = false;
-            this.btn_DropBoard.Click += new System.EventHandler(this.btn_DropBoard_Click);
-            // 
-            // btn_LastBoard
-            // 
-            this.btn_LastBoard.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(0)))));
-            this.btn_LastBoard.Font = new System.Drawing.Font("微软雅黑", 21.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btn_LastBoard.Location = new System.Drawing.Point(724, 618);
-            this.btn_LastBoard.Name = "btn_LastBoard";
-            this.btn_LastBoard.Size = new System.Drawing.Size(157, 60);
-            this.btn_LastBoard.TabIndex = 33;
-            this.btn_LastBoard.Text = "末次下料";
-            this.btn_LastBoard.UseVisualStyleBackColor = false;
-            this.btn_LastBoard.Click += new System.EventHandler(this.btn_LastBoard_Click);
-            // 
-            // ioStatus_BoardOut
-            // 
-            this.ioStatus_BoardOut.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("ioStatus_BoardOut.BackgroundImage")));
-            this.ioStatus_BoardOut.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-            this.ioStatus_BoardOut.BtnPress = true;
-            this.ioStatus_BoardOut.Location = new System.Drawing.Point(820, 705);
-            this.ioStatus_BoardOut.MaximumSize = new System.Drawing.Size(246, 73);
-            this.ioStatus_BoardOut.MinimumSize = new System.Drawing.Size(246, 73);
-            this.ioStatus_BoardOut.Name = "ioStatus_BoardOut";
-            this.ioStatus_BoardOut.Size = new System.Drawing.Size(246, 73);
-            this.ioStatus_BoardOut.StatusImage = ((System.Drawing.Bitmap)(resources.GetObject("ioStatus_BoardOut.StatusImage")));
-            this.ioStatus_BoardOut.TabIndex = 29;
-            this.ioStatus_BoardOut.Title = "托盘下料";
-            // 
-            // ioStatus_FPS
-            // 
-            this.ioStatus_FPS.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("ioStatus_FPS.BackgroundImage")));
-            this.ioStatus_FPS.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-            this.ioStatus_FPS.BtnPress = true;
-            this.ioStatus_FPS.Location = new System.Drawing.Point(551, 705);
-            this.ioStatus_FPS.MaximumSize = new System.Drawing.Size(246, 73);
-            this.ioStatus_FPS.MinimumSize = new System.Drawing.Size(246, 73);
-            this.ioStatus_FPS.Name = "ioStatus_FPS";
-            this.ioStatus_FPS.Size = new System.Drawing.Size(246, 73);
-            this.ioStatus_FPS.StatusImage = ((System.Drawing.Bitmap)(resources.GetObject("ioStatus_FPS.StatusImage")));
-            this.ioStatus_FPS.TabIndex = 28;
-            this.ioStatus_FPS.Title = "单反检查";
-            // 
-            // ioStatus_IC
-            // 
-            this.ioStatus_IC.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("ioStatus_IC.BackgroundImage")));
-            this.ioStatus_IC.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-            this.ioStatus_IC.BtnPress = true;
-            this.ioStatus_IC.Location = new System.Drawing.Point(281, 705);
-            this.ioStatus_IC.MaximumSize = new System.Drawing.Size(246, 73);
-            this.ioStatus_IC.MinimumSize = new System.Drawing.Size(246, 73);
-            this.ioStatus_IC.Name = "ioStatus_IC";
-            this.ioStatus_IC.Size = new System.Drawing.Size(246, 73);
-            this.ioStatus_IC.StatusImage = ((System.Drawing.Bitmap)(resources.GetObject("ioStatus_IC.StatusImage")));
-            this.ioStatus_IC.TabIndex = 27;
-            this.ioStatus_IC.Title = "IC拍照";
-            // 
-            // ioStatus_BoardIn
-            // 
-            this.ioStatus_BoardIn.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("ioStatus_BoardIn.BackgroundImage")));
-            this.ioStatus_BoardIn.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-            this.ioStatus_BoardIn.BtnPress = true;
-            this.ioStatus_BoardIn.Location = new System.Drawing.Point(11, 705);
-            this.ioStatus_BoardIn.MaximumSize = new System.Drawing.Size(246, 73);
-            this.ioStatus_BoardIn.MinimumSize = new System.Drawing.Size(246, 73);
-            this.ioStatus_BoardIn.Name = "ioStatus_BoardIn";
-            this.ioStatus_BoardIn.Size = new System.Drawing.Size(246, 73);
-            this.ioStatus_BoardIn.StatusImage = ((System.Drawing.Bitmap)(resources.GetObject("ioStatus_BoardIn.StatusImage")));
-            this.ioStatus_BoardIn.TabIndex = 26;
-            this.ioStatus_BoardIn.Title = "托盘上料";
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -1009,6 +956,7 @@
             this.splitContainer_All.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer_All)).EndInit();
             this.splitContainer_All.ResumeLayout(false);
+            this.groupBoxEx_Status.ResumeLayout(false);
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
@@ -1034,7 +982,6 @@
             this.tabControl1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             this.tabPage2.ResumeLayout(false);
-            this.groupBoxEx_Status.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1103,12 +1050,6 @@
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.Label label_Yeild_Board;
         private ImageButton btn_LastBoard;
-        private System.Windows.Forms.ToolStripStatusLabel AxisAPosition;
-        private System.Windows.Forms.ToolStripStatusLabel AxisBPosition;
-        private System.Windows.Forms.ToolStripStatusLabel AxisCPosition;
-        private System.Windows.Forms.ToolStripStatusLabel AxisDPosition;
-        private System.Windows.Forms.ToolStripStatusLabel AxisXPosition;
-        private System.Windows.Forms.ToolStripStatusLabel AxisYPosition;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel7;
         private System.Windows.Forms.ToolStripStatusLabel softVersion;
         private ImageButton btn_DropBoard;

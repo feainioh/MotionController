@@ -27,6 +27,7 @@ namespace OQC_IC_CHECK_System
         public const int WM_PCSForbideWork = Num4000 + 11;//禁止作业
         public const int WM_PCSNG = Num4000 + 12;//PCSNG
         public const int WM_PCSResult = Num4000 + 13;//pcs解析完成
+        public const int WM_PCSArrive = Num4000 + 14;//PCS到位【IC屏蔽】
 
 
         public const int WM_SYSCommand = 0x112;                     //系统消息
@@ -205,6 +206,10 @@ namespace OQC_IC_CHECK_System
         /// 禁止上料轴运动
         /// </summary>
         internal static bool FeedMoveForbidden = false;
+        /// <summary>
+        /// 禁止下料轴运动
+        /// </summary>
+        public static bool DropMoveForbidden = false;
         /// <summary>
         /// ic拍照是否使用矩阵方式运动【true：是；false：使用配置文件】
         /// </summary>

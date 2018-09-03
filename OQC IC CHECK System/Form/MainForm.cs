@@ -144,12 +144,13 @@ namespace OQC_IC_CHECK_System
 
             this.IdleTime.Start();
 
-            UpdateMachineStatus();
+           // UpdateMachineStatus();取消刷新位置信息--2018.8.29 [lqz]
             GlobalVar.Machine.ForceAlarmUpdate();
             AllowModbusRun(true);
 
             //   GlobalVar.AxisPCI.AddAxisIntoGroup(GlobalVar.AxisX.LinkIndex);
             //  GlobalVar.AxisPCI.AddAxisIntoGroup(GlobalVar.AxisY.LinkIndex);
+            softVersion.Text = string.Format("Ver:{0}", this.version);
         }
 
         /// <summary>
@@ -293,9 +294,12 @@ namespace OQC_IC_CHECK_System
             {
                 if (!GlobalVar.Machine.Pause)
                 {
-                    GlobalVar.AxisPCI.StopAllMove();
-                    GlobalVar.Machine.Pause = true;
-                    MsgBoxAlarm("PCS吸取真空异常，请复位！", true);
+                    if (!GlobalVar.ICForbiddenMode)
+                    {
+                        GlobalVar.AxisPCI.StopAllMove();
+                        GlobalVar.Machine.Pause = true;
+                        MsgBoxAlarm("PCS吸取真空异常，请复位！", true);
+                    }
                 }
             }
         }
@@ -887,20 +891,23 @@ namespace OQC_IC_CHECK_System
 
         private void Tag_CylinderPCS_Event_MonitorTimeout(bool Up)
         {
-            if (Up)//上限报警
+            if (!GlobalVar.ICForbiddenMode)//【IC】屏蔽不检查
             {
-                if (!myfunction.GetCylinderPCSDOStatus())//气缸上顶
+                if (Up)//上限报警
                 {
-                    GlobalVar.Machine.CylinderAlarm = true;
-                    AddAlarm(string.Format("PCS吸取气缸  {0} 到位 异常", Up ? "上" : "下"));
+                    if (!myfunction.GetCylinderPCSDOStatus())//气缸上顶
+                    {
+                        GlobalVar.Machine.CylinderAlarm = true;
+                        AddAlarm(string.Format("PCS吸取气缸  {0} 到位 异常", Up ? "上" : "下"));
+                    }
                 }
-            }
-            else//下限报警
-            {
-                if (myfunction.GetCylinderPCSDOStatus())//气缸下降
+                else//下限报警
                 {
-                    GlobalVar.Machine.CylinderAlarm = true;
-                    AddAlarm(string.Format("PCS吸取气缸  {0} 到位 异常", Up ? "上" : "下"));
+                    if (myfunction.GetCylinderPCSDOStatus())//气缸下降
+                    {
+                        GlobalVar.Machine.CylinderAlarm = true;
+                        AddAlarm(string.Format("PCS吸取气缸  {0} 到位 异常", Up ? "上" : "下"));
+                    }
                 }
             }
         }
@@ -957,14 +964,7 @@ namespace OQC_IC_CHECK_System
                 AddLogStr("启动无效，软件处于停止中···", true, Color.OrangeRed);
                 return;
             }
-            if (GlobalVar.CCD.Status != CCDStatus.Offline && GlobalVar.CCD.Status != CCDStatus.Online)
-            {
-                MsgBoxAlarm("相机未准备好,请关闭相机!", false);
-                while (GlobalVar.CCD.Status != CCDStatus.Offline && GlobalVar.CCD.Status != CCDStatus.Online)
-                {
-                    Thread.Sleep(10);
-                }
-            }
+
             if (!PCSConnected)
             {
                 AddLogStr("PCS检查机禁止作业，请允许作业!");
@@ -1507,9 +1507,11 @@ namespace OQC_IC_CHECK_System
                     #endregion
 
                     #region  上料轴放置托盘
+                    AddLogStr("等待PCS轴到上料位置");
                     CheckStatus();
                     if (!IsFirstMove) PCSFeedArrive.WaitOne();//等待PCS轴到上料位置
                     CheckStatus();
+                    AddLogStr("放置制品");
                     if (IsFirstMove)//第一次吸取动作
                         GlobalVar.AxisPCI.SuckerMotion(1, false);//放料
                     else if (LastBoard)//末次下料
@@ -1517,33 +1519,57 @@ namespace OQC_IC_CHECK_System
                     else
                         GlobalVar.AxisPCI.SuckerMotion(4, false);
 
-                    AddLogStr("上料轴上料");
                     GlobalVar.AxisPCI.SetAxisRunSpeed();//设置无制品运行速度
                     CheckStatus();
                     feedBlow = true;
                     #endregion
 
                     #region C、D轴上料动作
+                    //while (!DropComplete)
+                    //{
+                    //    Thread.Sleep(10);
+                    //    CheckStatus();
+                    //}
+                    //DropComplete = false;
                     watch.Restart();
-                    if (!LastBoard) GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisC.LinkIndex, true, GlobalVar.Point_ICPhotoPosition * GlobalVar.MotorRate, false);//运动到IC拍照位置
+                    if (!LastBoard && !GlobalVar.ICForbiddenMode) GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisC.LinkIndex, true, GlobalVar.Point_ICPhotoPosition * GlobalVar.MotorRate, false);//运动到IC拍照位置
                     if (!IsFirstMove) GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisD.LinkIndex, true, GlobalVar.Point_PCSPhotoPosition * GlobalVar.MotorRate, false);//运动到PCS解析位置
                     GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisA.LinkIndex, true, GlobalVar.Point_FeedLeft * GlobalVar.ServCMDRate, false);//运动到托盘上料位置                   
-                    GlobalVar.AxisPCI.MovetoRefPoint();//X,Y运动到参考位置
-                    GlobalVar.AxisPCI.WaitSigleMoveFinished(GlobalVar.AxisC.LinkIndex);
-                    //CheckAxisPosition(GlobalVar.AxisC.LinkIndex);//检查C轴位置--2018.8.10
+                    if (!GlobalVar.ICForbiddenMode)
+                    {
+                        GlobalVar.AxisPCI.MovetoRefPoint();//X,Y运动到参考位置
+                        GlobalVar.AxisPCI.WaitSigleMoveFinished(GlobalVar.AxisC.LinkIndex);
+                        //CheckAxisPosition(GlobalVar.AxisC.LinkIndex);//检查C轴位置--2018.8.10
+                    }
                     watch.Stop();
                     AddLogStr("IC轴上料CT：" + watch.Elapsed.TotalSeconds.ToString("0.000"));
                     AddLogStr("上料轴上料完成");
                     if (!LastBoard) ICBoardArriveCCD.Set();//ic到解析位置信号
                     UpdateAction(2);//更新界面
                     GlobalVar.AxisPCI.WaitSigleMoveFinished(GlobalVar.AxisD.LinkIndex);
+
                     //CheckAxisPosition(GlobalVar.AxisD.LinkIndex);//检查D轴位置--2018.8.10
 
                     if (!IsFirstMove)
                     {
-                        AddLogStr("PCS轴托盘上料完成");
-                        PCSBoardArriveCCD.Set();//PCS到解析位置信号                        
+                        AddLogStr("PCS轴托盘上料完成,查询是否允许作业");
+                        while (!PCSConnected)//禁止作业
+                        {
+                            CheckStatus();
+                            Thread.Sleep(10);
+                        }
+                        PCSBoardArriveCCD.Set();//PCS到解析位置信号
+                        if (GlobalVar.ICForbiddenMode)
+                        {
+                            AddLogStr("通知PCS检查机拍照,等待检查机拍照完成");
+                            //与PCS检查机的通信--拍照位置
+                            string str = "S01";
+                            str = "?" + str + "#" + myfunction.CRC8(str) + "\n";
+                            Thread.Sleep(100);
+                            GlobalVar.PCS_Port.SendMsg(str);
+                        }
                     }
+                    GlobalVar.DropMoveForbidden = false;//启用B轴
                     CheckStatus();
                     GlobalVar.AxisPCI.WaitSigleMoveFinished(GlobalVar.AxisA.LinkIndex);//等待A轴到位
                     //CheckAxisPosition(GlobalVar.AxisA.LinkIndex);//检查A轴位置--2018.8.10
@@ -1613,55 +1639,70 @@ namespace OQC_IC_CHECK_System
                     Thread.Sleep(100);
                     StartSignal.Wait();//启动按键是否触发
 
-                    #region 检查相机
-                    if (GlobalVar.CCD.Status != CCDStatus.Offline && GlobalVar.CCD.Status != CCDStatus.Online)
+                    if (!GlobalVar.ICForbiddenMode)
                     {
-                        AddLogStr("相机未准备好!", true, Color.Red);
-                        while (GlobalVar.CCD.Status != CCDStatus.Offline && GlobalVar.CCD.Status != CCDStatus.Online)
+                        #region 检查相机
+                        if (GlobalVar.CCD.Status != CCDStatus.Offline && GlobalVar.CCD.Status != CCDStatus.Online)
                         {
-                            CheckStatus();
-                            RestartCCD();
-                            Thread.Sleep(10);
+                            AddLogStr("相机未准备好!", true, Color.Red);
+                            while (GlobalVar.CCD.Status != CCDStatus.Offline && GlobalVar.CCD.Status != CCDStatus.Online)
+                            {
+                                CheckStatus();
+                                RestartCCD();
+                                Thread.Sleep(10);
+                            }
                         }
+
+                        GlobalVar.CCD.PlayerOnce();//抓取一次图像，避免后续的显示不是完整图
+                        CheckStatus();
+                        checkCamera = true;
+
+                        #endregion
+
+                        #region IC轴到位信号
+                        AddLogStr("等待托盘到IC位置");
+                        ICBoardArriveCCD.WaitOne();//等待IC托盘到解析位置信号
+                        CheckStatus();
+                        icArriveSignal = true;
+                        #endregion
+
+                        #region 拍照流程
+                        ICPhotoAndAnalasit();//拍照流程
+                        CheckStatus();
+                        icAnalasit = true;
+                        #endregion
+
+                        #region 解析完成,IC轴回上料位
+                        CheckStatus();
+                        ICAssistComplete.Set();//IC解析完成信号
+                        GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisC.LinkIndex, true, GlobalVar.Point_ICFeed * GlobalVar.MotorRate, false);//IC轴到上料位置
+                                                                                                                                        //IC轴复位
+                        GlobalVar.AxisPCI.Home(GlobalVar.AxisX.LinkIndex);
+                        GlobalVar.AxisPCI.Home(GlobalVar.AxisY.LinkIndex);
+                        GlobalVar.AxisPCI.WaitSigleMoveFinished(GlobalVar.AxisC.LinkIndex);//等待IC轴运动完成
+                        CheckStatus();
+                        AddLogStr("IC轴回到上料位置");
+                        ICFeedArrive.Set();//IC到上料到位信号
+                        GlobalVar.AxisPCI.WaitSigleMoveFinished(GlobalVar.AxisX.LinkIndex);
+                        GlobalVar.AxisPCI.WaitSigleMoveFinished(GlobalVar.AxisY.LinkIndex);
+                        //CheckAxisPosition(GlobalVar.AxisX.LinkIndex);//检查X轴位置--2018.8.10 
+                        //CheckAxisPosition(GlobalVar.AxisY.LinkIndex);//检查Y轴位置--2018.8.10
+                        //CheckAxisPosition(GlobalVar.AxisC.LinkIndex);//检查C轴位置--2018.8.10
+                        CheckStatus();
+                        icFeed = true;
+                        #endregion
                     }
-
-                    GlobalVar.CCD.PlayerOnce();//抓取一次图像，避免后续的显示不是完整图
-                    CheckStatus();
-                    checkCamera = true;
-                    #endregion
-
-                    #region IC轴到位信号
-                    AddLogStr("等待托盘到IC拍照位置");
-                    ICBoardArriveCCD.WaitOne();//等待IC托盘到解析位置信号
-                    CheckStatus();
-                    icArriveSignal = true;
-                    #endregion
-
-                    #region 拍照流程
-                    ICPhotoAndAnalasit();//拍照流程
-                    CheckStatus();
-                    icAnalasit = true;
-                    #endregion
-
-                    #region 解析完成,IC轴回上料位
-                    CheckStatus();
-                    ICAssistComplete.Set();//IC解析完成信号
-                    GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisC.LinkIndex, true, GlobalVar.Point_ICFeed * GlobalVar.MotorRate, false);//IC轴到上料位置
-                    //IC轴复位
-                    GlobalVar.AxisPCI.Home(GlobalVar.AxisX.LinkIndex);
-                    GlobalVar.AxisPCI.Home(GlobalVar.AxisY.LinkIndex);
-                    GlobalVar.AxisPCI.WaitSigleMoveFinished(GlobalVar.AxisC.LinkIndex);//等待IC轴运动完成
-                    CheckStatus();
-                    AddLogStr("IC轴回到上料位置");
-                    ICFeedArrive.Set();//IC到上料到位信号
-                    GlobalVar.AxisPCI.WaitSigleMoveFinished(GlobalVar.AxisX.LinkIndex);
-                    GlobalVar.AxisPCI.WaitSigleMoveFinished(GlobalVar.AxisY.LinkIndex);
-                    //CheckAxisPosition(GlobalVar.AxisX.LinkIndex);//检查X轴位置--2018.8.10 
-                    //CheckAxisPosition(GlobalVar.AxisY.LinkIndex);//检查Y轴位置--2018.8.10
-                    //CheckAxisPosition(GlobalVar.AxisC.LinkIndex);//检查C轴位置--2018.8.10
-                    CheckStatus();
-                    icFeed = true;
-                    #endregion
+                    else
+                    {
+                        GlobalVar.BoardCount++;//托盘数量加1
+                        myfunction.WriteIniString(GlobalVar.gl_inisection_Sheet, GlobalVar.gl_iniKey_BoardCount, GlobalVar.BoardCount.ToString("0"));
+                        SetLabelText(label_BoardCount, GlobalVar.BoardCount.ToString("0"));//更新托盘数量
+                        ICBoardArriveCCD.WaitOne();//等待IC托盘到解析位置信号
+                        CheckStatus();
+                        AddLogStr("IC解析屏蔽，不拍照");
+                        ICFeedArrive.Set();//IC到上料到位信号
+                        icArriveSignal = true;
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -1714,7 +1755,7 @@ namespace OQC_IC_CHECK_System
         /// <summary>
         /// 下料自动流程
         /// </summary>
-        private void AutoProcedure_PCS()
+        private void  AutoProcedure_PCS()
         {
             Stopwatch TestTime = new Stopwatch();//总CT
             while (!GlobalVar.SoftWareShutDown)
@@ -1739,25 +1780,37 @@ namespace OQC_IC_CHECK_System
                         CheckStatus();
                         Thread.Sleep(10);
                     }
-                    CheckStatus();
-                    AddLogStr("PCS轴到拍照位置，开始吸取制品");
-                    GlobalVar.AxisPCI.SuckerMotion(5, true);//PCS气缸吸取制品
+                    AddLogStr("PCS轴到拍照位置");
+                    //if (!GlobalVar.ICForbiddenMode)
+                    //{
+                    //    CheckStatus();
+                    //    AddLogStr("开始吸取制品");
+                    //    GlobalVar.AxisPCI.SuckerMotion(5, true);//PCS气缸吸取制品
+                    //}
                     GlobalVar.AxisPCI.SetDO(GlobalVar.AxisPCI.PCSLightControl, true);//打开PCS光源
                     CheckStatus();
                     PCSSucker = true;
                     #endregion
 
                     #region PCS轴到等待位置--开始作业
+                    //if (!GlobalVar.ICForbiddenMode)
+                    //{
+                    //    CheckStatus();
+                    //    AddLogStr("PCS轴到拍照等待位置");
+                    //    GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisD.LinkIndex, true, GlobalVar.Point_PCSWaitPosition * GlobalVar.MotorRate, false);//PCS轴运动到等待位置
+                    //}
+                    while (GlobalVar.DropMoveForbidden)//等待启用B轴
+                    {
+                        CheckStatus();
+                        Thread.Sleep(10);
+                    }
                     CheckStatus();
-                    AddLogStr("PCS轴到拍照等待位置");
-                    GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisD.LinkIndex, true, GlobalVar.Point_PCSWaitPosition * GlobalVar.MotorRate, false);//PCS轴运动到等待位置
-                    CheckStatus();
-                    AddLogStr("下料轴运动到等待位置");
+                    AddLogStr("PCS作业，禁用A轴");
                     GlobalVar.FeedMoveForbidden = true;//禁用A轴
                     GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisB.LinkIndex, true, GlobalVar.Point_DropLeft * GlobalVar.ServCMDRate, false);//B轴到PCS吸取位置
                     CheckStatus();
                     GlobalVar.AxisPCI.WaitSigleMoveFinished(GlobalVar.AxisB.LinkIndex);//等待B轴运动完成
-                    GlobalVar.AxisPCI.WaitSigleMoveFinished(GlobalVar.AxisD.LinkIndex);//等待PCS轴运动完成
+                    if (!GlobalVar.ICForbiddenMode) GlobalVar.AxisPCI.WaitSigleMoveFinished(GlobalVar.AxisD.LinkIndex);//等待PCS轴运动完成
                     //CheckAxisPosition(GlobalVar.AxisB.LinkIndex);//检查B轴位置--2018.8.10
                     //CheckAxisPosition(GlobalVar.AxisD.LinkIndex);//检查D轴位置--2018.8.10
                     CheckStatus();
@@ -1765,23 +1818,29 @@ namespace OQC_IC_CHECK_System
                     #endregion
 
                     #region 发送数据给检查机
-                    CheckStatus();
-                    AddLogStr("发送条码数据给检查机");
-                    SendICBarcode();//到位后发送IC条码数据
-                    while (!dataSendComplete)
+                    if (!GlobalVar.ICForbiddenMode)
                     {
                         CheckStatus();
-                        Thread.Sleep(10);
+                        AddLogStr("发送条码数据给检查机");
+                        SendICBarcode();//到位后发送IC条码数据
+                        while (!dataSendComplete)
+                        {
+                            CheckStatus();
+                            Thread.Sleep(10);
+                        }
+                        dataSendComplete = false;
                     }
-                    dataSendComplete = false;
                     photocomplete = true;
-                    AddLogStr("通知PCS检查机拍照,等待检查机拍照完成");
-                    //与PCS检查机的通信--拍照位置
-                    string str = "W01";
-                    str = "?" + str + "#" + myfunction.CRC8(str) + "\n";
-                    //Thread.Sleep(1000);
-                    GlobalVar.PCS_Port.SendMsg(str);
-                    AddLogStr("发送IC条码数据给PCS检查机");
+                    if (!GlobalVar.ICForbiddenMode)
+                    {
+                        AddLogStr("通知PCS检查机拍照,等待检查机拍照完成");
+                        //与PCS检查机的通信--拍照位置
+                        string str = "W01";
+                        str = "?" + str + "#" + myfunction.CRC8(str) + "\n";
+                        //Thread.Sleep(1000);
+                        GlobalVar.PCS_Port.SendMsg(str);
+                        AddLogStr("发送IC条码数据给PCS检查机");
+                    }
                     CheckStatus();
                     sendBarcode = true;
                     #endregion
@@ -1796,18 +1855,22 @@ namespace OQC_IC_CHECK_System
                     PCSPhoto = false;
                     photocomplete = false;
                     AddLogStr("检查机拍照完成,PCS轴回下料位");
-                    CheckStatus();
-                    GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisD.LinkIndex, true, GlobalVar.Point_PCSPhotoPosition * GlobalVar.MotorRate, false);//PCS轴运动到拍照位置
-                    GlobalVar.AxisPCI.WaitSigleMoveFinished(GlobalVar.AxisD.LinkIndex);//等待PCS轴运动完成
-                    //CheckAxisPosition(GlobalVar.AxisD.LinkIndex);//检查D轴位置--2018.8.10
-                    CheckStatus();
-                    GlobalVar.AxisPCI.SuckerMotion(5, false);//PCS气缸抬起
-                    CheckStatus();
+                    //if (!GlobalVar.ICForbiddenMode)
+                    //{
+                    //    CheckStatus();
+                    //    GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisD.LinkIndex, true, GlobalVar.Point_PCSPhotoPosition * GlobalVar.MotorRate, false);//PCS轴运动到拍照位置
+                    //    GlobalVar.AxisPCI.WaitSigleMoveFinished(GlobalVar.AxisD.LinkIndex);//等待PCS轴运动完成
+                    //    //CheckAxisPosition(GlobalVar.AxisD.LinkIndex);//检查D轴位置--2018.8.10
+                    //    CheckStatus();
+                    //    //GlobalVar.AxisPCI.SuckerMotion(5, false);//PCS气缸抬起
+                    //    //CheckStatus();
+                    //}
                     PCSBlow = true;
                     #endregion
 
                     #region PCS轴回上料位置
                     CheckStatus();
+                    GlobalVar.AxisPCI.SetAxisRunSpeed();
                     GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisD.LinkIndex, true, GlobalVar.Point_PCSFeed * GlobalVar.MotorRate, false);//PCS轴运动到上料位置
                     GlobalVar.AxisPCI.WaitSigleMoveFinished(GlobalVar.AxisD.LinkIndex);
                     //CheckAxisPosition(GlobalVar.AxisD.LinkIndex);//检查D轴位置--2018.8.10
@@ -1821,8 +1884,8 @@ namespace OQC_IC_CHECK_System
                     #region PCS 发送数据 --回归到位 
                     //与PCS检查机的通信-回归位置
                     string msg = "D";
-                    str = "?" + msg + "#" + myfunction.CRC8(msg) + "\n";
-                    GlobalVar.PCS_Port.SendMsg(str);
+                    string strs = "?" + msg + "#" + myfunction.CRC8(msg) + "\n";
+                    GlobalVar.PCS_Port.SendMsg(strs);
                     CheckStatus();
                     AddLogStr("PCS轴到下料位，等待检查机下料信号");
                     CheckStatus();
@@ -1840,6 +1903,7 @@ namespace OQC_IC_CHECK_System
                     PCSResult = false;
                     if (PCSNG)
                     {
+                        AddLogStr("PCS测试NG，下料轴回下料位");
                         CheckStatus();
                         //GlobalVar.AxisPCI.SetAxisRunSpeed();//设置无制品运行速度
                         GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisB.LinkIndex, true, GlobalVar.Point_DropRight * GlobalVar.ServCMDRate, false);//B轴运动到下料位置                    
@@ -1878,6 +1942,7 @@ namespace OQC_IC_CHECK_System
                         GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisB.LinkIndex, true, GlobalVar.Point_DropRight * GlobalVar.ServCMDRate, false);//B轴运动到下料位置                    
                         GlobalVar.FeedMoveForbidden = false;//启用A轴
                         GlobalVar.AxisPCI.WaitSigleMoveFinished(GlobalVar.AxisB.LinkIndex);//等待B轴运动完成
+                        GlobalVar.DropMoveForbidden = true;//禁用B轴
                                                                                            // CheckAxisPosition(GlobalVar.AxisB.LinkIndex);//检查B轴位置--2018.8.10
                         GlobalVar.AxisPCI.SetAxisRunSpeed();//设置无制品运行速度
                         CheckStatus();
@@ -1890,6 +1955,7 @@ namespace OQC_IC_CHECK_System
                             Thread.Sleep(150);
                         }
                         GlobalVar.AxisPCI.SuckerMotion(3, false);
+                        DropComplete = true;
                         AddLogStr("下料轴下料完成");
                         if (!(GlobalVar.Drop_Modbus.SendMsg(GlobalVar.Drop_Modbus.Coils.CommitSignal, true)))
                             GlobalVar.Drop_Modbus.AddMsgList(GlobalVar.Drop_Modbus.Coils.CommitSignal, true);//下料完成，信号置为0//通知下料机下料完成
@@ -1898,11 +1964,35 @@ namespace OQC_IC_CHECK_System
                     }
                     else
                     {
-                        AddLogStr("禁止下料轴下料!");
-                        CheckStatus();
-                        GlobalVar.FeedMoveForbidden = false;//启用A轴
-                        GlobalVar.IsLightSensorWorking = true;//启用光栅
-                        PCSFoebideDrop = false;
+                        if (!GlobalVar.ICForbiddenMode)
+                        {
+                            AddLogStr("禁止下料轴下料!");
+                            CheckStatus();
+                            GlobalVar.FeedMoveForbidden = false;//启用A轴
+                            GlobalVar.IsLightSensorWorking = true;//启用光栅
+                            PCSFoebideDrop = false;
+                        }
+                        else//【IC屏蔽】
+                        {
+                            if (PCSConnected)
+                            {
+                                AddLogStr("PCS检查NG，开始二次照合");
+                                CheckStatus();
+                                GlobalVar.IsLightSensorWorking = true;
+                                GlobalVar.AxisPCI.SetAxisRunSpeed();
+                                GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisD.LinkIndex, true, GlobalVar.Point_PCSPhotoPosition * GlobalVar.MotorRate, false);
+                                GlobalVar.AxisPCI.WaitSigleMoveFinished(GlobalVar.AxisD.LinkIndex);
+                                PCSBoardArriveCCD.Set();
+                                AddLogStr("通知PCS检查机二次照合,等待检查机拍照完成");
+                                //与PCS检查机的通信--拍照位置  
+                                string str = "S01";
+                                str = "?" + str + "#" + myfunction.CRC8(str) + "\n";
+                                Thread.Sleep(100);
+                                GlobalVar.PCS_Port.SendMsg(str);
+                                PCSFoebideDrop = false;
+                                continue;
+                            }
+                        }
                     }
                     TestTime.Stop();//停止计时
                     SetLabelText(this.label_RunTime, TestTime.Elapsed.TotalSeconds.ToString("0.0"));
@@ -1994,16 +2084,17 @@ namespace OQC_IC_CHECK_System
                         GlobalVar.AxisPCI.StopAllEMGMove();
                         GlobalVar.Machine.Pause = true;
                         AddLogStr("禁止上下料轴同时在安全区域内运动,禁用A轴");
-                        GlobalVar.AxisPCI.StopMove(GlobalVar.AxisA.LinkIndex);//停止A轴
-                        GlobalVar.AxisPCI.StopMove(GlobalVar.AxisB.LinkIndex);//停止B轴
+                        GlobalVar.AxisPCI.StopEMGMove(GlobalVar.AxisA.LinkIndex);//停止A轴
+                        GlobalVar.AxisPCI.StopEMGMove(GlobalVar.AxisB.LinkIndex);//停止B轴
                         GlobalVar.FeedMoveForbidden = true;//禁用A轴
                         log.AddCommLOG("防撞线程操作，将B轴移动到安全位置");
                         GlobalVar.AxisPCI.ClearAxisError(GlobalVar.AxisB.LinkIndex);//解除B轴的错误
                         GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisB.LinkIndex, true, GlobalVar.Point_DropRight * GlobalVar.ServCMDRate, false);//移动B轴到安全位置
                         GlobalVar.AxisPCI.WaitSigleMoveFinished(GlobalVar.AxisB.LinkIndex);
-                        MsgBoxAlarm("禁止上下料轴同时在安全区域内运动，请复位！", true);
+                        AddLogStr("禁止上下料轴同时在安全区域内运动，请复位！");
+                        Reset();
                     }
-                    Thread.Sleep(500);
+                    Thread.Sleep(100);
                 }
                 catch (Exception ex)
                 {
@@ -2084,11 +2175,12 @@ namespace OQC_IC_CHECK_System
                 if (GlobalVar.Machine.Pause) throw new PauseMachineErr("机台暂停");
             }
             //暂停
-            //while (GlobalVar.Machine.Pause)
-            //{
-            //    if (GlobalVar.Machine.Reset) throw new ResetMachineErr("机台复位");
-            //    Thread.Sleep(10);
-            //}
+            while (GlobalVar.Machine.Pause)
+            {
+                if (GlobalVar.Machine.Reset) break;
+                if (GlobalVar.Machine.CylinderAlarm) throw new Exception("气缸报警");
+                Thread.Sleep(10);
+            }
 
         }
         /// <summary>
@@ -2280,6 +2372,10 @@ namespace OQC_IC_CHECK_System
         /// </summary>
         private bool PCSNG = false;
         private bool dataSendComplete = false;
+        /// <summary>
+        /// 用于判断当前托盘是否放到下料机里
+        /// </summary>
+        private bool DropComplete = true;
 
         /// <summary>
         /// 机台复位的具体方法
@@ -3258,7 +3354,13 @@ namespace OQC_IC_CHECK_System
                     {
                         PCSResult = true;
                         PCSNG = false;
+                        PCSComplete = true;
+                        PCSFoebideDrop = false;
+                        DropSignal = true;
                     }
+                    break;
+                case GlobalVar.WM_PCSArrive:
+                    AddLogStr("【IC屏蔽】托盘到拍照位信号发送成功");
                     break;
             }
             base.WndProc(ref m);

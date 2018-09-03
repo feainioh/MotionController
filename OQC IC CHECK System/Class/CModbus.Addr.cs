@@ -76,11 +76,12 @@ namespace OQC_IC_CHECK_System
             }
             catch (Exception ex)
             {
-                throw new Exception("Modbus初始化失败:" + ex.Message);
-                //MsgBox box = new MsgBox();
-                //box.Title = "Modbus初始化失败";
-                //box.ShowText = ex.Message;
-                //box.ShowDialog();
+                log.AddERRORLOG("IP地址:" + IP + "\r\nModbus初始化失败:" + ex.Message);
+                if (IP.Contains("100"))
+                    throw new Exception("连接上料机失败,IP地址:" + IP);
+                else if (IP.Contains("200"))
+                    throw new Exception("连接下料机失败,IP地址:" + IP);
+                else throw new Exception("连接上下料机失败,IP地址:" + IP);
             }
         }
 
@@ -202,7 +203,7 @@ namespace OQC_IC_CHECK_System
                 int count = 0;
                 for (; ; )
                 {
-                    if(count>3)
+                    if (count > 3)
                         throw new Exception("通信异常,读取自动运行线圈失败！");
                     if ((rev == null) || (rev.byFunction != input.byFunction))
                     {
