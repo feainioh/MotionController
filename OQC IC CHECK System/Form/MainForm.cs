@@ -1493,7 +1493,7 @@ namespace OQC_IC_CHECK_System
                         CheckStatus();
                         Thread.Sleep(50);
                     }
-                    GlobalVar.DropMoveForbidden = true;
+                    GlobalVar.DropMoveForbidden = true;//禁用B轴
                     AddLogStr("上料轴允许运动，运动到上料位置");
                     CheckStatus();
                     UpdateAction(1);//更新界面
