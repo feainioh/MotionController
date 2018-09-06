@@ -1526,12 +1526,13 @@ namespace OQC_IC_CHECK_System
                     #endregion
 
                     #region C、D轴上料动作
-                    //while (!DropComplete)
-                    //{
-                    //    Thread.Sleep(10);
-                    //    CheckStatus();
-                    //}
-                    //DropComplete = false;
+                    while (!DropComplete)
+                    {
+                        if (IsFirstMove) break;
+                        Thread.Sleep(10);
+                        CheckStatus();
+                    }
+                    DropComplete = false;
                     watch.Restart();
                     if (!LastBoard && !GlobalVar.ICForbiddenMode) GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisC.LinkIndex, true, GlobalVar.Point_ICPhotoPosition * GlobalVar.MotorRate, false);//运动到IC拍照位置
                     if (!IsFirstMove) GlobalVar.AxisPCI.MoveDIR(GlobalVar.AxisD.LinkIndex, true, GlobalVar.Point_PCSPhotoPosition * GlobalVar.MotorRate, false);//运动到PCS解析位置
