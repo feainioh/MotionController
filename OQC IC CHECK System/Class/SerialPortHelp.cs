@@ -145,6 +145,9 @@ namespace OQC_IC_CHECK_System
                 case "S"://IC禁用模式【不处理】
                     MyFunction.SendMessage(GlobalVar.gl_IntPtr_MainWindow, GlobalVar.WM_PCSArrive, (IntPtr)0, (IntPtr)0);
                     break;
+                case "C"://oee上传命令
+                    GlobalVar.OeeSent = true;
+                    break;
                 default:
                     MsgBox("通信异常:未设定命令！", "串口通信异常", Color.Red);
                     break;

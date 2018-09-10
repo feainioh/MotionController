@@ -374,6 +374,10 @@ namespace OQC_IC_CHECK_System
         /// 屏蔽IC解析
         /// </summary>
         internal static bool ICForbiddenMode=false;
+        /// <summary>
+        /// 是否发送完成
+        /// </summary>
+        internal static bool OeeSent=false;
         #endregion
 
     }

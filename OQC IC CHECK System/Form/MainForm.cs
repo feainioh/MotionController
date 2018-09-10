@@ -2318,6 +2318,32 @@ namespace OQC_IC_CHECK_System
         }
 
         /// <summary>
+        /// 发送OEE数据
+        /// </summary>
+        /// <param name="str"></param>
+        private void sendOEEMessage(string str)
+        {
+            str = "C"+str;
+            str = "?" + str + "#" + myfunction.CRC8(str) + "\n";
+            AddLogStr("上传OEE数据:"+str);
+            GlobalVar.OeeSent = false;
+            GlobalVar.PCS_Port.SendMsg(str);
+            for(int i = 0; i < 3; i++)
+            {
+                if (GlobalVar.OeeSent)
+                {
+                    AddLogStr("OEE数据上传成功");
+                    return;
+                }
+                else GlobalVar.PCS_Port.SendMsg(str);
+                Thread.Sleep(100);
+            }
+            AddLogStr("OEE数据上传失败");
+        }
+
+
+
+        /// <summary>
         /// 更新状态栏中的轴状态
         /// </summary>
         private void SetAxisStatus()
