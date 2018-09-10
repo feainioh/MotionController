@@ -92,7 +92,8 @@ namespace OQC_IC_CHECK_System
             {
                 if (value != m_CmdPosition_X)
                 {
-                    if (!(Tag_Lock1.CurrentValue && Tag_Lock2.CurrentValue && Tag_LockBefore.CurrentValue)) StopMove(GlobalVar.AxisX.LinkIndex);//门未关好，禁止移动
+                    if (!GlobalVar.Machine.Pause)
+                        if (!(Tag_Lock1.CurrentValue && Tag_Lock2.CurrentValue && Tag_LockBefore.CurrentValue)) StopMove(GlobalVar.AxisX.LinkIndex);//门未关好，禁止移动
                     if (!Tag_LightSensor.CurrentValue) StopMove(GlobalVar.AxisX.LinkIndex);//X轴在处理PCS异常时可以动作
                     UpdatePositionX(value / GlobalVar.ServCMDRate);
                 }
@@ -109,7 +110,8 @@ namespace OQC_IC_CHECK_System
             {
                 if (value != m_CmdPosition_Y)
                 {
-                    if (!(Tag_Lock1.CurrentValue && Tag_Lock2.CurrentValue && Tag_LockBefore.CurrentValue)) StopMove(GlobalVar.AxisY.LinkIndex);//门未关好，禁止移动
+                    if (!GlobalVar.Machine.Pause)
+                        if (!(Tag_Lock1.CurrentValue && Tag_Lock2.CurrentValue && Tag_LockBefore.CurrentValue)) StopMove(GlobalVar.AxisY.LinkIndex);//门未关好，禁止移动
                     if (!Tag_LightSensor.CurrentValue) StopMove(GlobalVar.AxisY.LinkIndex);//Y轴在处理PCS异常时可以动作
                     UpdatePositionY(value / GlobalVar.ServCMDRate);
                 }
@@ -144,8 +146,11 @@ namespace OQC_IC_CHECK_System
             {
                 if (value != m_CmdPosition_A)
                 {
-                    if (!(Tag_Lock1.CurrentValue && Tag_Lock2.CurrentValue && Tag_LockBefore.CurrentValue && Tag_LightSensor.CurrentValue)) StopMove(GlobalVar.AxisA.LinkIndex);//门未关好，禁止移动
-                   // if (Position_B < GlobalVar.DropSaveDistance&&Target_A>GlobalVar.FeedSaveDistance) StopMove(GlobalVar.AxisA.LinkIndex);
+                    if (!GlobalVar.Machine.Pause)
+                    {
+                        if (!(Tag_Lock1.CurrentValue && Tag_Lock2.CurrentValue && Tag_LockBefore.CurrentValue && Tag_LightSensor.CurrentValue)) StopMove(GlobalVar.AxisA.LinkIndex);//门未关好，禁止移动
+                    }
+                    // if (Position_B < GlobalVar.DropSaveDistance&&Target_A>GlobalVar.FeedSaveDistance) StopMove(GlobalVar.AxisA.LinkIndex);
                     UpdatePositionA(value / GlobalVar.ServCMDRate);
                 }
                 m_CmdPosition_A = value;
@@ -161,7 +166,8 @@ namespace OQC_IC_CHECK_System
             {
                 if (value != m_CmdPosition_B)
                 {
-                    if (!(Tag_Lock1.CurrentValue && Tag_Lock2.CurrentValue && Tag_LockBefore.CurrentValue && Tag_LightSensor.CurrentValue)) StopMove(GlobalVar.AxisB.LinkIndex);//门未关好，禁止移动
+                    if (!GlobalVar.Machine.Pause)
+                        if (!(Tag_Lock1.CurrentValue && Tag_Lock2.CurrentValue && Tag_LockBefore.CurrentValue && Tag_LightSensor.CurrentValue)) StopMove(GlobalVar.AxisB.LinkIndex);//门未关好，禁止移动
                    // if (Position_A > GlobalVar.FeedSaveDistance&&Target_B<GlobalVar.DropSaveDistance) StopMove(GlobalVar.AxisB.LinkIndex);
                     UpdatePositionB(value / GlobalVar.ServCMDRate);
                 }
@@ -178,7 +184,8 @@ namespace OQC_IC_CHECK_System
             {
                 if (value != m_CmdPosition_C)
                 {
-                    if (!(Tag_Lock1.CurrentValue && Tag_Lock2.CurrentValue && Tag_LockBefore.CurrentValue)) StopMove(GlobalVar.AxisC.LinkIndex);//门未关好，禁止移动
+                    if (!GlobalVar.Machine.Pause)
+                        if (!(Tag_Lock1.CurrentValue && Tag_Lock2.CurrentValue && Tag_LockBefore.CurrentValue)) StopMove(GlobalVar.AxisC.LinkIndex);//门未关好，禁止移动
                     if (!Tag_LightSensor.CurrentValue) StopMove(GlobalVar.AxisC.LinkIndex);//C轴在处理PCS异常时可以动作
                     UpdatePositionC(value / GlobalVar.MotorRate);
                 }
@@ -195,7 +202,8 @@ namespace OQC_IC_CHECK_System
             {
                 if (value != m_CmdPosition_D)
                 {
-                    if (!(Tag_Lock1.CurrentValue && Tag_Lock2.CurrentValue && Tag_LockBefore.CurrentValue && Tag_LightSensor.CurrentValue)) StopMove(GlobalVar.AxisD.LinkIndex);//门未关好，禁止移动
+                    if (!GlobalVar.Machine.Pause)
+                        if (!(Tag_Lock1.CurrentValue && Tag_Lock2.CurrentValue && Tag_LockBefore.CurrentValue && Tag_LightSensor.CurrentValue)) StopMove(GlobalVar.AxisD.LinkIndex);//门未关好，禁止移动
                     UpdatePositionD(value / GlobalVar.MotorRate);
                 }
                 m_CmdPosition_D = value;

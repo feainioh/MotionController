@@ -2296,11 +2296,13 @@ namespace OQC_IC_CHECK_System
             {
                 if (!(GlobalVar.AxisPCI.Tag_LockBefore.CurrentValue)) //门未关，禁止复位
                 {
+                    AddLogStr("前门未锁，禁止复位\r\n请上锁前门，然后再复位");
                     MsgBox("前门未锁，禁止复位\r\n请上锁前门，然后再复位", "提示", Color.Red);
                     return;
                 }
                 if (!(GlobalVar.AxisPCI.Tag_Lock1.CurrentValue) || !(GlobalVar.AxisPCI.Tag_Lock2.CurrentValue)) //门未关，禁止复位
                 {
+                    AddLogStr("后门未锁，禁止复位\r\n请锁后门，然后再复位");
                     MsgBox("后门未锁，禁止复位\r\n请锁后门，然后再复位", "提示", Color.Red);
                     return;
                 }
