@@ -562,7 +562,7 @@ namespace OQC_IC_CHECK_System
                 Thread.Sleep(GlobalVar.CylinderSuctionWaitTime);//等待气缸上顶
                 SetAxisHomeSpeed();//设置会原点速度
                 if (Home(GlobalVar.AxisA.LinkIndex) && Home(GlobalVar.AxisB.LinkIndex)
-                && Home(GlobalVar.AxisX.LinkIndex) && Home(GlobalVar.AxisY.LinkIndex)
+                //&& Home(GlobalVar.AxisX.LinkIndex) && Home(GlobalVar.AxisY.LinkIndex)//--不复位X，Y轴[20180910 lqz]
                 && Home(GlobalVar.AxisC.LinkIndex) && Home(GlobalVar.AxisD.LinkIndex))  //回機械原點
                 {
                     WaitAllMoveFinished();
@@ -599,25 +599,24 @@ namespace OQC_IC_CHECK_System
                             return;
                         }
                     }
-                    if (GetIOState(0, ref iostatus))
-                    {
-                        if (!((iostatus & (uint)Ax_Motion_IO.AX_MOTION_IO_ORG) > 0))
-                        {
-                            m_MoveEnbale = false;
-                            eve_MotionMsg("X轴返回原点失败，轴未准备好...", true);
-                            return;
-                        }
-                    }
-                    if (GetIOState(1, ref iostatus))
-                    {
-                        if (!((iostatus & (uint)Ax_Motion_IO.AX_MOTION_IO_ORG) > 0))
-                        {
-                            m_MoveEnbale = false;
-                            eve_MotionMsg("Y轴返回原点失败，轴未准备好...", true);
-                            return;
-                        }
-                    }
-
+                    //if (GetIOState(0, ref iostatus))
+                    //{
+                    //    if (!((iostatus & (uint)Ax_Motion_IO.AX_MOTION_IO_ORG) > 0))
+                    //    {
+                    //        m_MoveEnbale = false;
+                    //        eve_MotionMsg("X轴返回原点失败，轴未准备好...", true);
+                    //        return;
+                    //    }
+                    //}
+                    //if (GetIOState(1, ref iostatus))
+                    //{
+                    //    if (!((iostatus & (uint)Ax_Motion_IO.AX_MOTION_IO_ORG) > 0))
+                    //    {
+                    //        m_MoveEnbale = false;
+                    //        eve_MotionMsg("Y轴返回原点失败，轴未准备好...", true);
+                    //        return;
+                    //    }
+                    //}
                     //if (GetIOState(6, ref iostatus))
                     //{
                     //    if (!((iostatus & (uint)Ax_Motion_IO.AX_MOTION_IO_ORG) > 0))

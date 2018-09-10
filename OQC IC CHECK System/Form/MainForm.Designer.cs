@@ -93,6 +93,10 @@
             this.richTextBox_ShowStr = new System.Windows.Forms.RichTextBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.listView_AlarmFrequency = new System.Windows.Forms.ListView();
+            this.lb_AxisD = new System.Windows.Forms.ToolStripStatusLabel();
+            this.lb_AxisC = new System.Windows.Forms.ToolStripStatusLabel();
+            this.lb_AxisB = new System.Windows.Forms.ToolStripStatusLabel();
+            this.lb_AxisA = new System.Windows.Forms.ToolStripStatusLabel();
             this.statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer_All)).BeginInit();
             this.splitContainer_All.Panel1.SuspendLayout();
@@ -129,6 +133,10 @@
             this.statusStrip1.BackColor = System.Drawing.Color.CadetBlue;
             this.statusStrip1.Font = new System.Drawing.Font("微软雅黑", 18F);
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.lb_AxisA,
+            this.lb_AxisB,
+            this.lb_AxisC,
+            this.lb_AxisD,
             this.toolStripStatusLabel7,
             this.softVersion});
             this.statusStrip1.Location = new System.Drawing.Point(0, 864);
@@ -141,7 +149,7 @@
             // toolStripStatusLabel7
             // 
             this.toolStripStatusLabel7.Name = "toolStripStatusLabel7";
-            this.toolStripStatusLabel7.Size = new System.Drawing.Size(1495, 31);
+            this.toolStripStatusLabel7.Size = new System.Drawing.Size(1137, 31);
             this.toolStripStatusLabel7.Spring = true;
             // 
             // softVersion
@@ -935,6 +943,30 @@
             this.listView_AlarmFrequency.UseCompatibleStateImageBehavior = false;
             this.listView_AlarmFrequency.View = System.Windows.Forms.View.Details;
             // 
+            // lb_AxisD
+            // 
+            this.lb_AxisD.Name = "lb_AxisD";
+            this.lb_AxisD.Size = new System.Drawing.Size(137, 31);
+            this.lb_AxisD.Text = "PCS搬运轴:";
+            // 
+            // lb_AxisC
+            // 
+            this.lb_AxisC.Name = "lb_AxisC";
+            this.lb_AxisC.Size = new System.Drawing.Size(115, 31);
+            this.lb_AxisC.Text = "IC搬运轴:";
+            // 
+            // lb_AxisB
+            // 
+            this.lb_AxisB.Name = "lb_AxisB";
+            this.lb_AxisB.Size = new System.Drawing.Size(92, 31);
+            this.lb_AxisB.Text = "下料轴:";
+            // 
+            // lb_AxisA
+            // 
+            this.lb_AxisA.Name = "lb_AxisA";
+            this.lb_AxisA.Size = new System.Drawing.Size(92, 31);
+            this.lb_AxisA.Text = "上料轴:";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -1053,6 +1085,10 @@
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel7;
         private System.Windows.Forms.ToolStripStatusLabel softVersion;
         private ImageButton btn_DropBoard;
+        private System.Windows.Forms.ToolStripStatusLabel lb_AxisA;
+        private System.Windows.Forms.ToolStripStatusLabel lb_AxisB;
+        private System.Windows.Forms.ToolStripStatusLabel lb_AxisC;
+        private System.Windows.Forms.ToolStripStatusLabel lb_AxisD;
     }
 }
 

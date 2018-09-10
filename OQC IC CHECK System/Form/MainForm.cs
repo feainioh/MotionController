@@ -2310,12 +2310,40 @@ namespace OQC_IC_CHECK_System
             }
 
             UpdateAction(0);
+            SetAxisStatus();
             Thread thd = new Thread(ResetFunction);
             thd.IsBackground = true;
             thd.Name = "复位线程";
             thd.Start();
         }
 
+        /// <summary>
+        /// 更新状态栏中的轴状态
+        /// </summary>
+        private void SetAxisStatus()
+        {
+            if (!GlobalVar.Machine.Pause)
+            {
+                lb_AxisA.Text = "上料轴:正常作业";
+                lb_AxisB.Text = "下料轴:正常作业";
+                lb_AxisC.Text = "IC搬运轴:正常作业";
+                lb_AxisD.Text = "PCS搬运轴:正常作业";
+            }
+            if(GlobalVar.resetComplete)
+            {
+                lb_AxisA.Text = "上料轴:复位完成";
+                lb_AxisB.Text = "下料轴:复位完成";
+                lb_AxisC.Text = "IC搬运轴:复位完成";
+                lb_AxisD.Text = "PCS搬运轴:复位完成";
+            }
+            if (GlobalVar.Machine.Reset)
+            {
+                lb_AxisA.Text = "上料轴:复位中";
+                lb_AxisB.Text = "下料轴:复位中";
+                lb_AxisC.Text = "IC搬运轴:复位中";
+                lb_AxisD.Text = "PCS搬运轴:复位中";
+            }            
+        }
 
         private bool BoardOut = true;//载板是否已经出去
         private int m_current_num = 0;//记录当前获得的图片序号，一张测完后重置
