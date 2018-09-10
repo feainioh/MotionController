@@ -599,6 +599,7 @@ namespace OQC_IC_CHECK_System
                             return;
                         }
                     }
+                    #region 复位完成判断--不用
                     //if (GetIOState(0, ref iostatus))
                     //{
                     //    if (!((iostatus & (uint)Ax_Motion_IO.AX_MOTION_IO_ORG) > 0))
@@ -635,6 +636,7 @@ namespace OQC_IC_CHECK_System
                     //        return;
                     //    }
                     //}
+                    #endregion
 
                     #endregion
                     MoveToRef();//所有轴运动到参考原点
