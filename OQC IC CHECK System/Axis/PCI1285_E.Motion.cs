@@ -464,9 +464,9 @@ namespace OQC_IC_CHECK_System
         {
             if (!m_bInit) return;
             Thread.Sleep(10);
-            UInt16 AxState_X = new UInt16();
-            UInt16 AxState_Y = new UInt16();
-            UInt16 AxState_U = new UInt16();
+            //UInt16 AxState_X = new UInt16();
+            //UInt16 AxState_Y = new UInt16();
+            UInt16 AxState_D = new UInt16();
             UInt16 AxState_A = new UInt16();
             UInt16 AxState_B = new UInt16();
             UInt16 AxState_C = new UInt16();
@@ -477,13 +477,13 @@ namespace OQC_IC_CHECK_System
                 if ((result == (uint)ErrorCode.SUCCESS)
                     && (GpState == 1))
                 {
-                    Motion.mAcm_AxGetState(m_Axishand[GlobalVar.AxisX.LinkIndex], ref AxState_X);
-                    Motion.mAcm_AxGetState(m_Axishand[GlobalVar.AxisY.LinkIndex], ref AxState_Y);
-                    Motion.mAcm_AxGetState(m_Axishand[GlobalVar.AxisA.LinkIndex], ref AxState_U);
+                    //Motion.mAcm_AxGetState(m_Axishand[GlobalVar.AxisX.LinkIndex], ref AxState_X);
+                    //Motion.mAcm_AxGetState(m_Axishand[GlobalVar.AxisY.LinkIndex], ref AxState_Y);
                     Motion.mAcm_AxGetState(m_Axishand[GlobalVar.AxisA.LinkIndex], ref AxState_A);
                     Motion.mAcm_AxGetState(m_Axishand[GlobalVar.AxisB.LinkIndex], ref AxState_B);
-                    Motion.mAcm_AxGetState(m_Axishand[GlobalVar.AxisB.LinkIndex], ref AxState_C);
-                    if ((AxState_X == 1) && (AxState_Y == 1) && (AxState_U == 1) && (AxState_A == 1) && (AxState_B == 1) && (AxState_C == 1))
+                    Motion.mAcm_AxGetState(m_Axishand[GlobalVar.AxisC.LinkIndex], ref AxState_C);
+                    Motion.mAcm_AxGetState(m_Axishand[GlobalVar.AxisD.LinkIndex], ref AxState_D);
+                    if (/*(AxState_X == 1) && (AxState_Y == 1) &&*/ (AxState_D == 1) && (AxState_A == 1) && (AxState_B == 1) && (AxState_C == 1))
                     { break; }
                     Thread.Sleep(5);
                 }
